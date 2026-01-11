@@ -826,3 +826,95 @@ export default function ClientComp() {
 - У Next.js 16+ безпека базується на поділі server / client
 
 </details>
+
+<details>
+<summary>10. Яка різниця між клієнтським та серверним рендерингом у Next.js?</summary>
+
+#### Next.js
+
+У **Next.js 16+** клієнтський і серверний рендеринг — це **не взаємовиключні
+підходи**, а частини **гібридної архітектури**, побудованої навколо **React
+Server Components** та **App Router**.
+
+#### Серверний рендеринг (Server Rendering)
+
+#### Як працює
+
+- HTML генерується **на сервері**
+- Дані отримуються під час рендерингу
+- У браузер надходить готова розмітка
+- Клієнтські компоненти гідратуються після завантаження
+
+#### У Next.js 16+
+
+- Server Components — **за замовчуванням**
+- Підтримуються SSR / SSG / ISR
+- Data fetching виконується на сервері
+
+```tsx
+export default async function Page() {
+  const data = await fetch('https://api.example.com/data', {
+    cache: 'no-store',
+  }).then(res => res.json());
+
+  return <div>{data.title}</div>;
+}
+```
+
+#### Переваги
+
+- кращий SEO
+- швидший first paint
+- менший JS-бандл
+- безпечна робота з БД і секретами
+
+#### Клієнтський рендеринг (Client Rendering)
+
+**Як працює**
+
+- HTML мінімальний або порожній
+- Дані завантажуються в браузері
+- UI рендериться після виконання JavaScript
+
+**У Next.js 16+**
+
+- Реалізується через Client Components
+- Потрібна директива 'use client'
+
+```tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+
+export default function ClientComponent() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/data')
+      .then(res => res.json())
+      .then(setData);
+  }, []);
+
+  return <div>{data?.title}</div>;
+}
+```
+
+#### Коли використовують
+
+- інтерактивні елементи
+- робота з browser-only API
+- локальний UI-стан
+
+#### Важливе розуміння для Next.js 16+
+
+- Server Rendering — база за замовчуванням
+- Client Rendering використовується точково
+- Server + Client компоненти комбінуються в одному дереві
+
+**Коротко:**
+
+- У Next.js 16+ серверний рендеринг — стандарт
+- Клієнтський рендеринг потрібен лише для інтерактивності
+- Оптимальний підхід — мінімум Client Components, максимум Server Components
+
+</details>
