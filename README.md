@@ -627,3 +627,105 @@ SSR у Next.js 16+ вмикається через `cache: 'no-store'` Або ч
 якщо є cookies / headers
 
 </details>
+
+<details>
+<summary>8. Що таке автоматична оптимізація сайтів у Next.js?</summary>
+
+#### Next.js
+
+**Автоматична оптимізація в Next.js** — це набір вбудованих механізмів, які
+**покращують продуктивність, SEO та UX автоматично**, без ручної конфігурації.  
+У **Next.js 16+ (App Router)** більшість оптимізацій працюють **“out of the
+box”** і вважаються стандартною поведінкою фреймворку.
+
+#### Основні види автоматичної оптимізації
+
+1. Автоматичний вибір стратегії рендерингу
+
+Next.js **сам визначає**, як рендерити сторінку:
+
+- **Static (SSG)** — якщо дані кешуються
+- **ISR** — якщо задано `revalidate`
+- **SSR** — якщо `no-store`, cookies або headers
+- **Server Components** — за замовчуванням
+
+```TypeScript
+await fetch(url, { next: { revalidate: 60 } }); // ISR
+await fetch(url, { cache: 'no-store' });        // SSR
+```
+
+Розробнику не потрібно вручну обирати режим.
+
+2. Automatic Code Splitting
+
+**Next.js автоматично:**
+
+- ділить код по маршрутах
+- завантажує лише потрібний JS
+- зменшує initial bundle
+
+Це працює без налаштувань, на рівні App Router.
+
+3. React Server Components (RSC)
+
+- серверні компоненти не потрапляють у JS-бандл
+- логіка та data fetching виконуються на сервері
+- менше JavaScript у браузері
+
+```TypeScript
+export default async function Page() {
+  const data = await getData();
+  return <div>{data.title}</div>;
+}
+```
+
+4. Оптимізація зображень (`next/image`)
+
+- автоматичний lazy loading
+- responsive images
+- modern formats (WebP / AVIF)
+- оптимальний розмір під девайс
+
+```TypeScript
+import Image from 'next/image';
+
+<Image src="/hero.png" alt="Hero" width={400} height={300} />
+```
+
+5. Оптимізація шрифтів (`next/font`)
+
+- self-hosted шрифти
+- відсутність layout shift
+- автоматичний preload
+
+```TypeScript
+import { Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'] });
+```
+
+6. Prefetch навігації Next.js
+
+- автоматично prefetch-ить маршрути
+- швидка навігація без повного перезавантаження
+- працює через `<Link />`
+
+7. Streaming та partial rendering
+
+- HTML віддається частинами
+- сторінка починає рендеритись до повного завантаження даних
+- покращує TTFB та UX
+
+#### Що важливо розуміти
+
+- Оптимізації вбудовані, а не опціональні
+- Next.js заохочує “performance by default”
+- Ручна оптимізація потрібна рідко
+
+**Коротко:**
+
+- Next.js автоматично оптимізує рендеринг, JS та assets
+- Server Components і code splitting зменшують бандл
+- Зображення, шрифти та навігація оптимізуються з коробки
+
+</details>
