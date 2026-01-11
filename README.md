@@ -454,3 +454,176 @@ export function middleware(req: Request) {
 - Це дозволяє будувати повноцінні fullstack-застосунки в одному проєкті
 
 </details>
+
+<details>
+<summary>6. Як Next.js обробляє серверний рендеринг (SSR)?</summary>
+
+#### Next.js
+
+У **Next.js 16+** серверний рендеринг є частиною **єдиного гібридного підходу**,
+побудованого навколо **React Server Components** та **App Router**.  
+SSR означає, що HTML сторінки **генерується на сервері при кожному запиті**, а
+не під час білду.
+
+#### Як працює SSR у Next.js 16+
+
+1. **Запит від користувача** надходить на сервер
+2. **Server Components** виконуються на сервері
+3. Дані отримуються під час рендерингу
+4. Сервер повертає готовий HTML
+5. На клієнті відбувається гідратація Client Components
+
+#### Як увімкнути SSR в App Router
+
+У Next.js 16+ **SSR не вмикається явно** — він визначається через **налаштування
+кешування**.
+
+SSR через `fetch` з `no-store`
+
+```TypeScript
+export default async function Page() {
+  const data = await fetch('https://api.example.com/data', {
+    cache: 'no-store',
+  }).then(res => res.json());
+
+  return <pre>{JSON.stringify(data, null, 2)}</pre>;
+}
+```
+
+- `cache: 'no-store'` → сторінка рендериться на кожен запит
+- дані не кешуються
+- класичний SSR
+
+#### Динамічні сторінки (force-dynamic)
+
+SSR також активується, якщо сторінка є динамічною:
+
+```TypeScript
+export const dynamic = 'force-dynamic';
+```
+
+**Або якщо використовується:**
+
+- cookies
+- headers
+- auth-сесії
+- персоналізовані дані
+
+#### Коли використовувати SSR
+
+**SSR доцільний, якщо:**
+
+- дані часто змінюються
+- контент персоналізований
+- потрібна актуальність у реальному часі
+- залежність від cookies / headers / auth
+
+**Приклади:**
+
+- dashboard
+- профіль користувача
+- admin-панель
+
+#### SSR vs інші стратегії
+
+**SSR** — рендер на кожен запит **SSG** — рендер під час білду **ISR** —
+статичний рендер + revalidation **RSC** — базовий механізм виконання на сервері
+
+У Next.js 16+ SSR — це не окремий режим, а частина гібридної моделі.
+
+**Важливо**
+
+- `getServerSideProps` не використовується (Pages Router)
+- SSR у App Router керується через cache та dynamic
+- `useEffect` не потрібен для data fetching
+
+**Коротко:**
+
+- SSR у Next.js 16+ виконується на сервері при кожному запиті
+- Вмикається через cache: `'no-store'` або динамічний рендеринг
+- Є частиною гібридної моделі App Router та Server Components
+
+</details>
+
+<details>
+<summary>7. У Next.js як зробити так, щоб сторінка рендерилась на сервері при кожному запиті?</summary>
+
+#### Next.js
+
+У **Next.js 16+** сторінка рендериться **на сервері при кожному запиті (SSR)**
+не через окремий режим, а **через керування кешуванням і динамічністю**.
+
+Існує кілька коректних способів це зробити.
+
+1. Використати `fetch` з `cache: 'no-store'` (рекомендовано)
+
+Це **основний і найпоширеніший спосіб** увімкнути SSR у App Router.
+
+```TypeScript
+export default async function Page() {
+  const data = await fetch('https://api.example.com/data', {
+    cache: 'no-store',
+  }).then(res => res.json());
+
+  return <div>{data.title}</div>;
+}
+```
+
+- сторінка рендериться на кожен запит
+- дані не кешуються
+- повноцінний SSR
+
+2. Примусово зробити сторінку динамічною
+
+Можна явно вказати, що сторінка має бути динамічною:
+
+```TypeScript
+export const dynamic = 'force-dynamic';
+```
+
+**Це означає:**
+
+- рендер при кожному запиті
+- навіть без fetch
+
+3. Використання cookies або headers
+
+**Якщо сторінка читає:**
+
+- cookies()
+- headers()
+- дані користувача / сесії
+
+→ Next.js автоматично вмикає SSR
+
+```TypeScript
+import { cookies } from 'next/headers';
+
+export default function Page() {
+  const token = cookies().get('token');
+  return <div>{token?.value}</div>;
+}
+```
+
+#### Що не потрібно робити
+
+- `getServerSideProps` — Pages Router
+- `useEffect` для SSR
+- ручне керування сервером
+
+#### Коли це доцільно
+
+**SSR при кожному запиті використовують для:**
+
+- персоналізованих сторінок
+- dashboard
+- admin-панелей
+- контенту, що часто змінюється
+
+**Коротко:**
+
+SSR у Next.js 16+ вмикається через `cache: 'no-store'` Або через
+`dynamic = 'force-dynamic'` Next.js автоматично рендерить сторінку на сервері,
+якщо є cookies / headers
+
+</details>
