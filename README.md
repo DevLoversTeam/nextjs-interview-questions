@@ -343,3 +343,114 @@ my-next-app/
 - Для реальних продакшен-проєктів обирають Next.js
 
 </details>
+
+<details>
+<summary>5. Які задачі Next.js вирішує на рівні фронтенду і бекенду?</summary>
+
+#### Next.js
+
+**Next.js** позиціонується як **fullstack React-фреймворк**, оскільки закриває
+як типові фронтенд-задачі, так і значну частину серверної логіки без потреби в
+окремому бекенд-проєкті.
+
+#### Задачі, які Next.js вирішує на рівні фронтенду
+
+1. Маршрутизація та навігація
+
+- файлова маршрутизація через `app/`
+- вкладені маршрути та layouts
+- loading / error стани
+- клієнтська навігація без перезавантаження сторінки
+
+```txt
+app/
+ ├─ layout.tsx
+ ├─ page.tsx
+ └─ dashboard/
+     └─ page.tsx
+```
+
+2. Рендеринг та продуктивність
+
+- React Server Components за замовчуванням
+- SSR / SSG / ISR
+- streaming та partial rendering
+- зменшення JS-бандла
+
+3. Оптимізації з коробки
+
+- оптимізація зображень (`next/image`)
+- оптимізація шрифтів (`next/font`)
+- автоматичний code splitting
+- prefetch навігації
+
+4. Керування UI-станами
+
+- loading (`loading.tsx`)
+- error boundaries (`error.tsx`)
+- not found (`not-found.tsx`)
+- metadata для SEO
+
+#### Задачі, які Next.js вирішує на рівні бекенду
+
+1. Data fetching на сервері
+
+- виконання запитів до API або БД на сервері
+- кешування та revalidation через fetch
+
+```TypeScript
+await fetch(url, { next: { revalidate: 60 } });
+```
+
+2. API та серверна логіка
+
+- **Route Handlers** (`app/api/*`)
+- побудова REST або edge-ендпоінтів
+- робота без окремого Express / Nest сервера
+
+```TypeScript
+// app/api/users/route.ts
+export async function GET() {
+  return Response.json({ users: [] });
+}
+```
+
+3. Server Actions
+
+- виклик серверної логіки напряму з компонентів
+- обробка форм без клієнтського API
+
+```TypeScript
+'use server';
+
+export async function createUser(formData: FormData) {
+  // серверна логіка
+}
+```
+
+4. Middleware
+
+- перевірка авторизації
+- редиректи
+- геолокація
+- A/B логіка
+
+```TypeScript
+export function middleware(req: Request) {
+  // auth, redirects, headers
+}
+```
+
+5. Безпека
+
+- доступ до секретів лише на сервері
+- відсутність витоку токенів у браузер
+- контроль доступу на рівні маршруту
+
+**Коротко:**
+
+- Next.js закриває фронтенд-задачі: UI, маршрути, оптимізації, SEO
+- На бекенді: data fetching, API, server actions, middleware
+- Це дозволяє будувати повноцінні fullstack-застосунки в одному проєкті
+
+</details>
