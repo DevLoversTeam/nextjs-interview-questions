@@ -191,3 +191,64 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
 - Для нових продакшен-проєктів обирають Next.js
 
 </details>
+
+<details>
+<summary>3. Яку команду використовують для створення нового застосунку Next.js?</summary>
+
+#### Next.js
+
+Для створення нового застосунку на **Next.js+** використовується офіційний
+CLI-інструмент **`create-next-app`**.
+
+**Найпоширеніша та рекомендована команда:**
+
+```bash
+npx create-next-app@latest
+```
+
+**Після запуску CLI запропонує інтерактивну конфігурацію, зокрема:**
+
+- використання TypeScript
+- App Router (`app/`) — рекомендовано
+- ESLint
+- Tailwind CSS
+- alias для імпортів (`@/`)
+- використання `src/` директорії
+
+**Приклад створення проєкту з іменем:**
+
+```bash
+npx create-next-app@latest my-next-app
+```
+
+**Що створюється за замовчуванням (Next.js 16+)**
+
+- структура з **App Router**
+- `app/layout.tsx` — кореневий layout
+- `app/page.tsx` — головна сторінка
+- підтримка **React Server Components**
+- готова продакшен-конфігурація
+
+```txt
+my-next-app/
+ ├─ app/
+ │   ├─ layout.tsx
+ │   └─ page.tsx
+ ├─ public/
+ ├─ next.config.js
+ └─ package.json
+```
+
+**Важливе зауваження**
+
+- Create React App не використовується
+- Pages Router не є стандартом для нових проєктів
+- create-next-app одразу створює production-ready середовище
+
+**Коротко:**
+
+- Для створення Next.js застосунку використовують npx create-next-app@latest
+- CLI автоматично налаштовує App Router і сучасний стек
+- Це рекомендований і єдиний актуальний спосіб старту з Next.js 16+
+
+</details>
