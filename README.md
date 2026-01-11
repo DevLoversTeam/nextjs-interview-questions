@@ -729,3 +729,100 @@ const inter = Inter({ subsets: ['latin'] });
 - Зображення, шрифти та навігація оптимізуються з коробки
 
 </details>
+
+<details>
+<summary>9. Як працюють змінні середовища в Next.js?</summary>
+
+#### Next.js
+
+У **Next.js 16+** змінні середовища використовуються для зберігання
+конфігурації, секретів та середовищних налаштувань.  
+Ключовий принцип — **чітке розділення серверних і клієнтських змінних**.
+
+1. Файли зі змінними середовища
+
+**Next.js автоматично підхоплює такі файли:**
+
+- `.env.local` — локальне середовище (не комітиться)
+- `.env.development`
+- `.env.production`
+- `.env.test`
+
+```env
+DATABASE_URL=postgres://...
+NEXT_PUBLIC_API_URL=https://api.example.com
+```
+
+2. Серверні змінні середовища (за замовчуванням)
+
+**Змінні без префікса `NEXT_PUBLIC_`:**
+
+- доступні лише на сервері
+- не потрапляють у JS-бандл
+- безпечні для зберігання секретів
+
+```TypeScript
+const dbUrl = process.env.DATABASE_URL;
+```
+
+**Можна використовувати в:**
+
+- Server Components
+- Route Handlers
+- Server Actions
+- Middleware
+
+3. Клієнтські змінні середовища
+
+**Змінні з префіксом `NEXT_PUBLIC_`:**
+
+- доступні в браузері
+- інжектяться під час білду
+- не є секретами
+
+```TypeScript
+const apiUrl = process.env.NEXT*PUBLIC_API_URL;
+```
+
+Усі `NEXT_PUBLIC_*` значення видимі користувачу.
+
+4. Використання в App Router
+
+**Server Component (безпечний доступ)**
+
+```tsx
+export default function Page() {
+  return <div>{process.env.SECRET_KEY}</div>;
+}
+```
+
+**Client Component (тільки `NEXT_PUBLIC_*`)**
+
+```tsx
+'use client';
+
+export default function ClientComp() {
+  return <div>{process.env.NEXT_PUBLIC_API_URL}</div>;
+}
+```
+
+5. Важливі особливості
+
+- Змінні читаються **під час білду**
+- Зміна `.env` → потрібен **restart сервера**
+- Runtime-змінні підтримуються лише на сервері
+- Edge Middleware має обмежений доступ
+
+#### Типові помилки
+
+- Використання секретів з `NEXT_PUBLIC_`
+- Доступ до server env у Client Component
+- Очікування, що env зміниться без рестарту
+
+**Коротко:**
+
+- Змінні без `NEXT_PUBLIC_` — тільки серверні
+- `NEXT_PUBLIC_*` — доступні в браузері
+- У Next.js 16+ безпека базується на поділі server / client
+
+</details>
