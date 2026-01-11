@@ -119,6 +119,7 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
   - гірший SEO та повільніший first paint
 
 - **Next.js**:
+
   - **Server Components (default)**
   - **SSR / SSG / ISR**
   - streaming та partial rendering
@@ -133,6 +134,7 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
   - API та auth — зовнішні сервіси
 
 - **Next.js**:
+
   - fullstack-фреймворк
   - Route Handlers, Server Actions, Middleware
   - безпечна робота з БД та секретами
@@ -145,6 +147,7 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
   - вся логіка на клієнті
 
 - **Next.js**:
+
   - файлова маршрутизація (`app/`)
   - layouts, loading/error states
   - nested routing без додаткових бібліотек
@@ -157,6 +160,7 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
   - налаштовуються вручну
 
 - **Next.js**:
+
   - автоматичний code splitting
   - оптимізація зображень та шрифтів
   - менший JS-бандл завдяки Server Components
@@ -169,6 +173,7 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
   - не рекомендований для нових застосунків
 
 - **Next.js**:
+
   - активно розвивається
   - стандарт де-факто для React у продакшені
 
@@ -180,6 +185,7 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
   - прототипів
 
 - **Next.js** підходить для:
+
   - SEO-орієнтованих застосунків
   - складних UI з серверною логікою
   - масштабованих продуктів
@@ -250,5 +256,90 @@ my-next-app/
 - Для створення Next.js застосунку використовують npx create-next-app@latest
 - CLI автоматично налаштовує App Router і сучасний стек
 - Це рекомендований і єдиний актуальний спосіб старту з Next.js 16+
+
+</details>
+
+<details>
+<summary>4. Яка різниця між Next.js та звичайним React-застосунком?</summary>
+
+#### Next.js
+
+**Звичайний React-застосунок** (SPA) — це клієнтський UI-рівень, тоді як
+**Next.js** — це **повноцінний React-фреймворк**, який вирішує типові
+продакшен-проблеми на рівні архітектури.
+
+1. Рендеринг
+
+- **React SPA**:
+
+  - лише **Client-Side Rendering (CSR)**
+  - HTML формується в браузері
+  - залежність від `useEffect` для data fetching
+
+- **Next.js**:
+
+  - **React Server Components (default)**
+  - підтримка **SSR / SSG / ISR**
+  - data fetching на сервері без `useEffect`
+  - кращий SEO та швидший first load
+
+2. Архітектурний підхід
+
+- **React SPA**:
+
+  - лише frontend
+  - бекенд — окремий сервіс
+  - немає серверної логіки в проєкті
+
+- **Next.js**:
+
+  - fullstack-фреймворк
+  - Server Actions, Route Handlers, Middleware
+  - безпечна робота з БД, токенами, секретами
+
+3. Маршрутизація
+
+- **React SPA**:
+
+  - потребує сторонніх бібліотек (`react-router`)
+  - маршрути описуються вручну
+
+- **Next.js**:
+
+  - файлова маршрутизація через `app/`
+  - layouts, nested routes, loading/error стани
+  - менше boilerplate-коду
+
+4. Продуктивність
+
+- **React SPA**:
+
+  - великий JS-бандл
+  - рендеринг повністю на клієнті
+
+- **Next.js**:
+
+  - автоматичний code splitting
+  - менший JS-бандл завдяки Server Components
+  - streaming та partial rendering
+
+5. Налаштування та best practices
+
+- **React SPA**:
+
+  - архітектурні рішення — на розробнику
+  - легко припуститися помилок
+
+- **Next.js**:
+
+  - opinionated фреймворк
+  - вбудовані best practices
+  - швидший старт для продакшену
+
+**Коротко:**
+
+- React SPA — це лише UI-рівень, Next.js — fullstack-фреймворк
+- Next.js підтримує серверний рендеринг та сучасні оптимізації
+- Для реальних продакшен-проєктів обирають Next.js
 
 </details>
