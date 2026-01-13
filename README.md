@@ -1026,3 +1026,114 @@ app/_components/
 - Динамічні маршрути та спеціальні файли керують поведінкою сторінки
 
 </details>
+
+<details>
+<summary>12. Як створювати динамічні маршрути в Next.js?</summary>
+
+#### Next.js
+
+У **Next.js** динамічні маршрути створюються за допомогою **квадратних дужок
+(`[]`)** у структурі папок **`app/`**.  
+Це дозволяє будувати сторінки з параметрами URL **без ручної конфігурації
+роутів**.
+
+1. Базовий динамічний маршрут
+
+```txt
+app/posts/[id]/page.tsx → /posts/123
+```
+
+```tsx
+export default function Page({ params }: { params: { id: string } }) {
+  return <div>Post ID: {params.id}</div>;
+}
+```
+
+- id — параметр маршруту
+- значення доступне через params
+
+2. Кілька параметрів
+
+```txt
+app/users/[userId]/posts/[postId]/page.tsx
+→ /users/42/posts/7
+```
+
+```tsx
+export default function Page({
+  params,
+}: {
+  params: { userId: string; postId: string };
+}) {
+  return (
+    <div>
+      User: {params.userId}, Post: {params.postId}
+    </div>
+  );
+}
+```
+
+3. Catch-all маршрути
+
+Використовуються для змінної кількості сегментів.
+
+```txt
+app/docs/[...slug]/page.tsx
+→ /docs/a/b/c
+```
+
+```tsx
+export default function Page({ params }: { params: { slug: string[] } }) {
+  return <div>{params.slug.join('/')}</div>;
+}
+```
+
+4. Optional catch-all маршрути
+
+```txt
+app/docs/[[...slug]]/page.tsx
+```
+
+**Працює для:**
+
+- `/docs`
+- `/docs/a`
+- `/docs/a/b`
+
+5. Data fetching у динамічних маршрутах
+
+```tsx
+export default async function Page({ params }: { params: { id: string } }) {
+  const post = await fetch(`https://api.example.com/posts/${params.id}`, {
+    cache: 'no-store',
+  }).then(res => res.json());
+
+  return <h1>{post.title}</h1>;
+}
+```
+
+6. Генерація статичних маршрутів (SSG)
+
+Для SSG використовують generateStaticParams:
+
+```TypeScript
+export async function generateStaticParams() {
+  return [{ id: '1' }, { id: '2' }];
+}
+```
+
+#### Best practices
+
+- Використовувати **Server Components** за замовчуванням
+- Валідувати параметри
+- Не зловживати catch-all маршрутами
+- Поєднувати з layouts для спільного UI
+
+**Коротко:**
+
+- Динамічні маршрути створюються через `[param]`
+- `params` містить значення URL
+- Підтримуються catch-all та optional маршрути
+- Працює з SSR, SSG та ISR
+
+</details>
