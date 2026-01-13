@@ -1137,3 +1137,127 @@ export async function generateStaticParams() {
 - Працює з SSR, SSG та ISR
 
 </details>
+
+<details>
+<summary>13. Як Next.js обробляє параметри URL у динамічних маршрутах?</summary>
+
+#### Next.js
+
+У **Next.js** параметри URL у динамічних маршрутах обробляються автоматично
+через **структуру папок** у `app/`.  
+Значення параметрів передаються в сторінку або layout через обʼєкт **`params`**.
+
+1. Доступ до параметрів маршруту
+
+**Для маршруту:**
+
+```txt
+app/posts/[id]/page.tsx → /posts/123
+```
+
+**Next.js передає параметри як проп:**
+
+```tsx
+export default function Page({ params }: { params: { id: string } }) {
+  return <div>Post ID: {params.id}</div>;
+}
+```
+
+- `id` завжди типу `string`
+- отримується на сервері
+
+2. Параметри в layouts
+
+Параметри доступні не лише в `page.tsx`, а й у вкладених `layout.tsx`:
+
+```tsx
+export default function Layout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: { id: string };
+}) {
+  return (
+    <section>
+      <h1>Post {params.id}</h1>
+      {children}
+    </section>
+  );
+}
+```
+
+3. Catch-all параметри
+
+```txt
+app/docs/[...slug]/page.tsx → /docs/a/b/c
+```
+
+```tsx
+export default function Page({ params }: { params: { slug: string[] } }) {
+  return <div>{params.slug.join('/')}</div>;
+}
+```
+
+- `slug` — масив сегментів URL
+
+4. Optional catch-all параметри
+
+```txt
+app/docs/[[...slug]]/page.tsx
+```
+
+```tsx
+params.slug; // string[] | undefined
+```
+
+**Працює для:**
+
+- `/docs`
+- `/docs/a`
+- `/docs/a/b`
+
+5. Параметри та data fetching
+
+Параметри часто використовуються для серверного data fetching:
+
+```tsx
+export default async function Page({ params }: { params: { id: string } }) {
+  const data = await fetch(`https://api.example.com/posts/${params.id}`, {
+    cache: 'no-store',
+  }).then(res => res.json());
+
+  return <h1>{data.title}</h1>;
+}
+```
+
+6. Валідація параметрів
+
+Next.js не валідовує параметри автоматично, тому:
+
+- перевірка типів
+- обробка невалідних значень
+- виклик `notFound()`
+
+```TypeScript
+import { notFound } from 'next/navigation';
+
+if (!isValid(params.id)) {
+  notFound();
+}
+```
+
+#### Важливі особливості
+
+- `params` доступні лише на сервері
+- У Client Components параметри отримують через `useParams()`
+- Параметри завжди рядки або масиви рядків
+
+**Коротко:**
+
+- URL-параметри передаються через `params`
+- Працюють у `page.tsx` і `layout.tsx`
+- Підтримуються dynamic, catch-all і optional параметри
+- Валідація параметрів — відповідальність розробника
+
+</details>
