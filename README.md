@@ -1261,3 +1261,106 @@ if (!isValid(params.id)) {
 - Валідація параметрів — відповідальність розробника
 
 </details>
+
+<details>
+<summary>14. Як обробляти маршрути catch-all у Next.js?</summary>
+
+#### Next.js
+
+У **Next.js 16+** catch-all маршрути дозволяють обробляти **змінну кількість
+сегментів URL** в одному маршруті.  
+Вони реалізуються через **спеціальний синтаксис папок** у директорії `app/`.
+
+1. Catch-all маршрути (`[...param]`)
+
+Catch-all маршрут обробляє **один або більше сегментів** URL.
+
+```txt
+app/docs/[...slug]/page.tsx
+```
+
+**Відповідає URL:**
+
+- `/docs/a`
+- `/docs/a/b`
+- `/docs/a/b/c`
+
+```tsx
+export default function Page({ params }: { params: { slug: string[] } }) {
+  return <div>{params.slug.join('/')}</div>;
+}
+```
+
+- `slug` — масив рядків
+- завжди містить щонайменше один елемент
+
+2. Optional catch-all маршрути (`[[...param]]`)
+
+Optional catch-all дозволяє обробляти нуль або більше сегментів.
+
+```txt
+app/docs/[[...slug]]/page.tsx
+```
+
+**Відповідає URL:**
+
+- `/docs`
+- `/docs/a`
+- `/docs/a/b`
+
+```tsx
+export default function Page({ params }: { params: { slug?: string[] } }) {
+  return <div>{params.slug?.join('/') ?? 'Docs root'}</div>;
+}
+```
+
+3. Різниця між catch-all і optional catch-all
+
+| Тип           | Сегменти | Значення               |
+| ------------- | -------- | ---------------------- |
+| `[...slug] `  | 1+       | `string[]`             |
+| `[[...slug]]` | 0+       | `string[] / undefined` |
+
+4. Типові кейси використання
+
+**Catch-all маршрути застосовують для:**
+
+- документації
+- блогів з вкладеною структурою
+- файлових менеджерів
+- CMS-сторінок
+- breadcrumbs-навігації
+
+5. Data fetching з catch-all
+
+```tsx
+export default async function Page({
+  params,
+}: {
+  params: { slug?: string[] };
+}) {
+  const path = params.slug?.join('/') ?? '';
+
+  const page = await fetch(`https://api.example.com/pages/${path}`, {
+    cache: 'no-store',
+  }).then(res => res.json());
+
+  return <h1>{page.title}</h1>;
+}
+```
+
+#### Best practices
+
+- Використовувати catch-all лише за потреби
+- Обробляти edge cases (`undefined`)
+- Поєднувати з layouts
+- Валідувати сегменти URL
+
+**Коротко:**
+
+- Catch-all маршрути обробляють змінну кількість сегментів
+- `[...param]` — мінімум один сегмент
+- `[[...param]]` — нуль або більше сегментів
+- Часто використовуються для docs та CMS
+
+</details>
