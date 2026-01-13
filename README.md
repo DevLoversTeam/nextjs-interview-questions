@@ -918,3 +918,111 @@ export default function ClientComponent() {
 - Оптимальний підхід — мінімум Client Components, максимум Server Components
 
 </details>
+
+<details>
+<summary>11. Як працює файловий роутинг у Next.js?</summary>
+
+#### Next.js
+
+У **Next.js** файловий роутинг реалізований через **App Router** і базується на
+структурі папки **`app/`**.  
+Кожна папка та спеціальний файл визначають маршрут, layout або поведінку
+сторінки **без ручної конфігурації**.
+
+#### Базові принципи файлового роутингу
+
+1. `page.tsx` — сторінка маршруту
+
+Файл `page.tsx` створює **публічний маршрут**.
+
+```txt
+app/page.tsx        → /
+app/blog/page.tsx   → /blog
+```
+
+```tsx
+export default function Page() {
+  return <h1>Blog</h1>;
+}
+```
+
+2. `layout.tsx` — спільний layout
+
+`layout.tsx` обгортає всі вкладені сторінки:
+
+```txt
+app/layout.tsx        → кореневий layout
+app/dashboard/layout.tsx → layout для /dashboard/*
+```
+
+```tsx
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <html>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+3. Вкладені маршрути (Nested Routes)
+
+Структура папок визначає вкладеність маршрутів:
+
+```txt
+app/dashboard/settings/page.tsx → /dashboard/settings
+```
+
+4. Динамічні маршрути
+
+Для параметрів використовуються квадратні дужки:
+
+```txt
+app/posts/[id]/page.tsx → /posts/123
+```
+
+```tsx
+export default function Page({ params }: { params: { id: string } }) {
+  return <div>Post {params.id}</div>;
+}
+```
+
+5. Спеціальні файли маршруту
+
+| Файл            | Призначення                 |
+| --------------- | --------------------------- |
+| `loading.tsx`   | loading state               |
+| `error.tsx`     | error boundary              |
+| `not-found.tsx` | 404                         |
+| `template.tsx`  | reset state між навігаціями |
+
+6. Route Groups
+
+Папки в дужках не впливають на URL, але допомагають структурувати код:
+
+```txt
+app/(auth)/login/page.tsx → /login
+```
+
+7. Приватні папки
+
+Папки з `_` не створюють маршрут:
+
+```txt
+app/_components/
+```
+
+#### Важливі особливості
+
+- Маршрути створюються автоматично
+- Немає конфігурації роутів
+- App Router підтримує streaming та layouts
+- Pages Router використовується лише для legacy-проєктів
+
+**Коротко:**
+
+- Файловий роутинг у Next.js 16+ базується на папці `app/`
+- `page.tsx` створює маршрут, `layout.tsx` — спільний UI
+- Динамічні маршрути та спеціальні файли керують поведінкою сторінки
+
+</details>
