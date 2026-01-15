@@ -918,3 +918,1033 @@ export default function ClientComponent() {
 - Оптимальний підхід — мінімум Client Components, максимум Server Components
 
 </details>
+
+<details>
+<summary>11. Як працює файловий роутинг у Next.js?</summary>
+
+#### Next.js
+
+У **Next.js** файловий роутинг реалізований через **App Router** і базується на
+структурі папки **`app/`**.  
+Кожна папка та спеціальний файл визначають маршрут, layout або поведінку
+сторінки **без ручної конфігурації**.
+
+#### Базові принципи файлового роутингу
+
+1. `page.tsx` — сторінка маршруту
+
+Файл `page.tsx` створює **публічний маршрут**.
+
+```txt
+app/page.tsx        → /
+app/blog/page.tsx   → /blog
+```
+
+```tsx
+export default function Page() {
+  return <h1>Blog</h1>;
+}
+```
+
+2. `layout.tsx` — спільний layout
+
+`layout.tsx` обгортає всі вкладені сторінки:
+
+```txt
+app/layout.tsx        → кореневий layout
+app/dashboard/layout.tsx → layout для /dashboard/*
+```
+
+```tsx
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <html>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+3. Вкладені маршрути (Nested Routes)
+
+Структура папок визначає вкладеність маршрутів:
+
+```txt
+app/dashboard/settings/page.tsx → /dashboard/settings
+```
+
+4. Динамічні маршрути
+
+Для параметрів використовуються квадратні дужки:
+
+```txt
+app/posts/[id]/page.tsx → /posts/123
+```
+
+```tsx
+export default function Page({ params }: { params: { id: string } }) {
+  return <div>Post {params.id}</div>;
+}
+```
+
+5. Спеціальні файли маршруту
+
+| Файл            | Призначення                 |
+| --------------- | --------------------------- |
+| `loading.tsx`   | loading state               |
+| `error.tsx`     | error boundary              |
+| `not-found.tsx` | 404                         |
+| `template.tsx`  | reset state між навігаціями |
+
+6. Route Groups
+
+Папки в дужках не впливають на URL, але допомагають структурувати код:
+
+```txt
+app/(auth)/login/page.tsx → /login
+```
+
+7. Приватні папки
+
+Папки з `_` не створюють маршрут:
+
+```txt
+app/_components/
+```
+
+#### Важливі особливості
+
+- Маршрути створюються автоматично
+- Немає конфігурації роутів
+- App Router підтримує streaming та layouts
+- Pages Router використовується лише для legacy-проєктів
+
+**Коротко:**
+
+- Файловий роутинг у Next.js 16+ базується на папці `app/`
+- `page.tsx` створює маршрут, `layout.tsx` — спільний UI
+- Динамічні маршрути та спеціальні файли керують поведінкою сторінки
+
+</details>
+
+<details>
+<summary>12. Як створювати динамічні маршрути в Next.js?</summary>
+
+#### Next.js
+
+У **Next.js** динамічні маршрути створюються за допомогою **квадратних дужок
+(`[]`)** у структурі папок **`app/`**.  
+Це дозволяє будувати сторінки з параметрами URL **без ручної конфігурації
+роутів**.
+
+1. Базовий динамічний маршрут
+
+```txt
+app/posts/[id]/page.tsx → /posts/123
+```
+
+```tsx
+export default function Page({ params }: { params: { id: string } }) {
+  return <div>Post ID: {params.id}</div>;
+}
+```
+
+- id — параметр маршруту
+- значення доступне через params
+
+2. Кілька параметрів
+
+```txt
+app/users/[userId]/posts/[postId]/page.tsx
+→ /users/42/posts/7
+```
+
+```tsx
+export default function Page({
+  params,
+}: {
+  params: { userId: string; postId: string };
+}) {
+  return (
+    <div>
+      User: {params.userId}, Post: {params.postId}
+    </div>
+  );
+}
+```
+
+3. Catch-all маршрути
+
+Використовуються для змінної кількості сегментів.
+
+```txt
+app/docs/[...slug]/page.tsx
+→ /docs/a/b/c
+```
+
+```tsx
+export default function Page({ params }: { params: { slug: string[] } }) {
+  return <div>{params.slug.join('/')}</div>;
+}
+```
+
+4. Optional catch-all маршрути
+
+```txt
+app/docs/[[...slug]]/page.tsx
+```
+
+**Працює для:**
+
+- `/docs`
+- `/docs/a`
+- `/docs/a/b`
+
+5. Data fetching у динамічних маршрутах
+
+```tsx
+export default async function Page({ params }: { params: { id: string } }) {
+  const post = await fetch(`https://api.example.com/posts/${params.id}`, {
+    cache: 'no-store',
+  }).then(res => res.json());
+
+  return <h1>{post.title}</h1>;
+}
+```
+
+6. Генерація статичних маршрутів (SSG)
+
+Для SSG використовують generateStaticParams:
+
+```TypeScript
+export async function generateStaticParams() {
+  return [{ id: '1' }, { id: '2' }];
+}
+```
+
+#### Best practices
+
+- Використовувати **Server Components** за замовчуванням
+- Валідувати параметри
+- Не зловживати catch-all маршрутами
+- Поєднувати з layouts для спільного UI
+
+**Коротко:**
+
+- Динамічні маршрути створюються через `[param]`
+- `params` містить значення URL
+- Підтримуються catch-all та optional маршрути
+- Працює з SSR, SSG та ISR
+
+</details>
+
+<details>
+<summary>13. Як Next.js обробляє параметри URL у динамічних маршрутах?</summary>
+
+#### Next.js
+
+У **Next.js** параметри URL у динамічних маршрутах обробляються автоматично
+через **структуру папок** у `app/`.  
+Значення параметрів передаються в сторінку або layout через обʼєкт **`params`**.
+
+1. Доступ до параметрів маршруту
+
+**Для маршруту:**
+
+```txt
+app/posts/[id]/page.tsx → /posts/123
+```
+
+**Next.js передає параметри як проп:**
+
+```tsx
+export default function Page({ params }: { params: { id: string } }) {
+  return <div>Post ID: {params.id}</div>;
+}
+```
+
+- `id` завжди типу `string`
+- отримується на сервері
+
+2. Параметри в layouts
+
+Параметри доступні не лише в `page.tsx`, а й у вкладених `layout.tsx`:
+
+```tsx
+export default function Layout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: { id: string };
+}) {
+  return (
+    <section>
+      <h1>Post {params.id}</h1>
+      {children}
+    </section>
+  );
+}
+```
+
+3. Catch-all параметри
+
+```txt
+app/docs/[...slug]/page.tsx → /docs/a/b/c
+```
+
+```tsx
+export default function Page({ params }: { params: { slug: string[] } }) {
+  return <div>{params.slug.join('/')}</div>;
+}
+```
+
+- `slug` — масив сегментів URL
+
+4. Optional catch-all параметри
+
+```txt
+app/docs/[[...slug]]/page.tsx
+```
+
+```tsx
+params.slug; // string[] | undefined
+```
+
+**Працює для:**
+
+- `/docs`
+- `/docs/a`
+- `/docs/a/b`
+
+5. Параметри та data fetching
+
+Параметри часто використовуються для серверного data fetching:
+
+```tsx
+export default async function Page({ params }: { params: { id: string } }) {
+  const data = await fetch(`https://api.example.com/posts/${params.id}`, {
+    cache: 'no-store',
+  }).then(res => res.json());
+
+  return <h1>{data.title}</h1>;
+}
+```
+
+6. Валідація параметрів
+
+Next.js не валідовує параметри автоматично, тому:
+
+- перевірка типів
+- обробка невалідних значень
+- виклик `notFound()`
+
+```TypeScript
+import { notFound } from 'next/navigation';
+
+if (!isValid(params.id)) {
+  notFound();
+}
+```
+
+#### Важливі особливості
+
+- `params` доступні лише на сервері
+- У Client Components параметри отримують через `useParams()`
+- Параметри завжди рядки або масиви рядків
+
+**Коротко:**
+
+- URL-параметри передаються через `params`
+- Працюють у `page.tsx` і `layout.tsx`
+- Підтримуються dynamic, catch-all і optional параметри
+- Валідація параметрів — відповідальність розробника
+
+</details>
+
+<details>
+<summary>14. Як обробляти маршрути catch-all у Next.js?</summary>
+
+#### Next.js
+
+У **Next.js 16+** catch-all маршрути дозволяють обробляти **змінну кількість
+сегментів URL** в одному маршруті.  
+Вони реалізуються через **спеціальний синтаксис папок** у директорії `app/`.
+
+1. Catch-all маршрути (`[...param]`)
+
+Catch-all маршрут обробляє **один або більше сегментів** URL.
+
+```txt
+app/docs/[...slug]/page.tsx
+```
+
+**Відповідає URL:**
+
+- `/docs/a`
+- `/docs/a/b`
+- `/docs/a/b/c`
+
+```tsx
+export default function Page({ params }: { params: { slug: string[] } }) {
+  return <div>{params.slug.join('/')}</div>;
+}
+```
+
+- `slug` — масив рядків
+- завжди містить щонайменше один елемент
+
+2. Optional catch-all маршрути (`[[...param]]`)
+
+Optional catch-all дозволяє обробляти нуль або більше сегментів.
+
+```txt
+app/docs/[[...slug]]/page.tsx
+```
+
+**Відповідає URL:**
+
+- `/docs`
+- `/docs/a`
+- `/docs/a/b`
+
+```tsx
+export default function Page({ params }: { params: { slug?: string[] } }) {
+  return <div>{params.slug?.join('/') ?? 'Docs root'}</div>;
+}
+```
+
+3. Різниця між catch-all і optional catch-all
+
+| Тип           | Сегменти | Значення               |
+| ------------- | -------- | ---------------------- |
+| `[...slug] `  | 1+       | `string[]`             |
+| `[[...slug]]` | 0+       | `string[] / undefined` |
+
+4. Типові кейси використання
+
+**Catch-all маршрути застосовують для:**
+
+- документації
+- блогів з вкладеною структурою
+- файлових менеджерів
+- CMS-сторінок
+- breadcrumbs-навігації
+
+5. Data fetching з catch-all
+
+```tsx
+export default async function Page({
+  params,
+}: {
+  params: { slug?: string[] };
+}) {
+  const path = params.slug?.join('/') ?? '';
+
+  const page = await fetch(`https://api.example.com/pages/${path}`, {
+    cache: 'no-store',
+  }).then(res => res.json());
+
+  return <h1>{page.title}</h1>;
+}
+```
+
+#### Best practices
+
+- Використовувати catch-all лише за потреби
+- Обробляти edge cases (`undefined`)
+- Поєднувати з layouts
+- Валідувати сегменти URL
+
+**Коротко:**
+
+- Catch-all маршрути обробляють змінну кількість сегментів
+- `[...param]` — мінімум один сегмент
+- `[[...param]]` — нуль або більше сегментів
+- Часто використовуються для docs та CMS
+
+</details>
+
+<details>
+<summary>15. Опиши функціональність компонента Link у Next.js.</summary>
+
+#### Next.js
+
+Компонент **`Link`** у **Next.js** використовується для **клієнтської навігації
+між маршрутами** без повного перезавантаження сторінки.  
+Він є ключовим елементом **App Router** та забезпечує швидку й оптимізовану
+навігацію.
+
+#### Основні можливості `Link`
+
+1. Клієнтська навігація (SPA-поведінка)
+
+`Link` виконує перехід між сторінками:
+
+- без перезавантаження браузера
+- зі збереженням стану
+- з мінімальним JS-навантаженням
+
+```tsx
+import Link from 'next/link';
+
+<Link href="/blog">Blog</Link>;
+```
+
+2. Автоматичний prefetch
+
+Next.js автоматично prefetch-ить сторінки, на які веде `Link`:
+
+- при появі у viewport
+- у фоновому режимі
+- тільки для внутрішніх маршрутів
+
+Це значно прискорює навігацію.
+
+3. Інтеграція з App Router
+
+`Link` працює з:
+
+- nested routes
+- layouts
+- streaming
+- loading states
+
+Навігація не скидає layouts і не викликає повний ререндер сторінки.
+
+4. Підтримка динамічних маршрутів
+
+```tsx
+<Link href={`/posts/${id}`}>Post</Link>
+```
+
+Працює з dynamic та catch-all маршрутами.
+
+5. Accessibility (a11y)
+
+- `Link` рендерить `<a>`
+- підтримує клавіатурну навігацію
+- коректно працює з screen readers
+
+#### Що не потрібно робити
+
+- використовувати `<a href>` для внутрішньої навігації
+- обгортати `Link` в `<a>`
+- вручну реалізовувати SPA-навігацію
+
+#### Додаткові можливості
+
+- `prefetch={false}` — вимкнення prefetch
+- `replace` — замінює запис у history
+- `scroll={false}` — зберігає позицію скролу
+
+```tsx
+<Link href="/dashboard" prefetch={false} scroll={false}>
+  Dashboard
+</Link>
+```
+
+**Коротко:**
+
+- `Link` забезпечує швидку клієнтську навігацію
+- Автоматично prefetch-ить сторінки
+- Глибоко інтегрований з App Router та layouts
+- Є стандартом навігації у Next.js
+
+</details>
+
+<details>
+<summary>16. Як реалізувати міжсторінкову навігацію (navigation) у Next.js?</summary>
+
+#### Next.js
+
+У **Next.js** міжсторінкова навігація реалізується через **вбудований router App
+Router**, який підтримує **декларативну** та **програмну** навігацію без
+перезавантаження сторінки.
+
+1. Декларативна навігація через `Link` (основний спосіб)
+
+Компонент `Link` використовується для навігації через UI:
+
+```tsx
+import Link from 'next/link';
+
+<Link href="/blog">Blog</Link>;
+```
+
+**Коли використовувати:**
+
+- навігаційні меню
+- списки
+- кнопки-посилання
+
+2. Програмна навігація через `useRouter`
+
+Для навігації у відповідь на події (submit, click, success):
+
+```tsx
+'use client';
+
+import { useRouter } from 'next/navigation';
+
+export default function Form() {
+  const router = useRouter();
+
+  const onSubmit = async () => {
+    await saveData();
+    router.push('/dashboard');
+  };
+
+  return <button onClick={onSubmit}>Save</button>;
+}
+```
+
+**Основні методи:**
+
+- `router.push()` — перехід
+- `router.replace()` — без history
+- `router.back()` — назад
+- `router.refresh()` — оновлення даних
+
+3. Навігація після Server Actions
+
+У Server Actions використовується redirect():
+
+```TypeScript
+'use server';
+
+import { redirect } from 'next/navigation';
+
+export async function createPost() {
+  // логіка
+  redirect('/posts');
+}
+```
+
+4.  Керування URL без навігації
+
+Для читання параметрів URL:
+
+- `useParams()`
+- `useSearchParams()`
+
+```tsx
+'use client';
+
+import { useSearchParams } from 'next/navigation';
+
+const params = useSearchParams();
+```
+
+#### Що не використовують у App Router
+
+- `next/router` (Pages Router)
+- ручну роботу з `window.location`
+
+#### Best practices
+
+- `Link` — для UI-навігації
+- `useRouter` — для подій
+- `redirect` — для серверної логіки
+- мінімізувати Client Components
+
+**Коротко:**
+
+- Next.js підтримує декларативну та програмну навігацію
+- `Link` — основний інструмент
+- `useRouter` та `redirect` — для керування навігацією з логіки
+
+</details>
+
+<details>
+<summary>17. Як працює попереднє завантаження сторінок (prefetching) у Next.js?</summary>
+
+#### Next.js
+
+У **Next.js** попереднє завантаження сторінок (**prefetching**) — це
+автоматичний механізм, який **завантажує дані та код сторінки заздалегідь**, ще
+до переходу користувача.  
+Це забезпечує **миттєву навігацію** між сторінками.
+
+#### Як працює prefetching
+
+1. Компонент `<Link />` зʼявляється у viewport
+2. Next.js у фоновому режимі:
+   - завантажує потрібний JavaScript
+   - отримує серверні дані (RSC payload)
+3. При кліку сторінка відкривається майже миттєво
+
+Все відбувається **без перезавантаження сторінки**.
+
+#### Prefetching у App Router
+
+- Увімкнений **за замовчуванням**
+- Працює тільки для **внутрішніх маршрутів**
+- Використовує React Server Components
+- Враховує кешування (`fetch`, `revalidate`)
+
+```tsx
+import Link from 'next/link';
+
+<Link href="/dashboard">Dashboard</Link>;
+```
+
+#### Що саме prefetch-иться
+
+- JS-код сторінки
+- RSC-дані
+- Layout-и, які ще не були завантажені
+
+**Не prefetch-яться:**
+
+- зовнішні посилання
+- сторінки з prefetch={false}
+
+#### Керування prefetching
+
+**Вимкнення prefetch**
+
+```tsx
+<Link href="/heavy-page" prefetch={false}>
+  Heavy page
+</Link>
+```
+
+**Коли варто вимикати:**
+
+- важкі сторінки
+- рідко використовувані маршрути
+- сторінки з персональними даними
+
+#### Вплив на продуктивність
+
+**Плюси:**
+
+- швидша навігація
+- кращий UX
+- менший TTI
+
+**Мінуси:**
+
+- додаткові фонові запити
+- потенційне навантаження на сервер
+
+#### Best practices
+
+- Довіряти default-поведінці
+- Не вимикати без причини
+- Поєднувати з Server Components та кешуванням
+
+**Коротко:**
+
+- Prefetching автоматично підвантажує сторінки
+- Активується через Link
+- Значно пришвидшує навігацію
+- Може бути вимкнений для окремих маршрутів
+
+</details>
+
+<details>
+<summary>18. Як Next.js реалізує code splitting?</summary>
+
+#### Next.js
+
+У **Next.js** **code splitting** реалізований **автоматично** та є частиною
+філософії _performance by default_.  
+Розробнику **не потрібно вручну налаштовувати поділ коду** — Next.js робить це
+на рівні маршрутизації та компонентів.
+
+#### Основні рівні code splitting у Next.js
+
+1. Code splitting за маршрутами
+
+Кожен маршрут (`page.tsx`) отримує **окремий JS-бандл**:
+
+```txt
+app/page.tsx        → bundle для /
+app/blog/page.tsx   → bundle для /blog
+```
+
+Завантажується лише код потрібної сторінки.
+
+2. Code splitting через React Server Components
+
+- Server Components не потрапляють у JS-бандл
+- Логіка та data fetching виконуються на сервері
+- У браузер передається лише результат
+
+```tsx
+export default async function Page() {
+  const data = await getData();
+  return <div>{data.title}</div>;
+}
+```
+
+Це суттєво зменшує розмір клієнтського JavaScript.
+
+3. Code splitting для Client Components
+
+Client Components:
+
+- виділяються в окремі чанки
+- завантажуються лише за потреби
+- ізольовані від серверної логіки
+
+```tsx
+'use client';
+
+export function InteractiveButton() {
+  return <button>Click</button>;
+}
+```
+
+4. Динамічний імпорт (next/dynamic)
+
+Для важких або рідко використовуваних компонентів:
+
+```tsx
+import dynamic from 'next/dynamic';
+
+const HeavyChart = dynamic(() => import('./HeavyChart'), {
+  ssr: false,
+});
+```
+
+Код завантажиться тільки коли компонент реально потрібен.
+
+#### Як code splitting працює з навігацією
+
+- Next.js prefetch-ить чанки для наступних сторінок
+- При кліку чанки вже в кеші
+- Навігація виглядає миттєвою
+
+#### Що не потрібно робити
+
+- вручну налаштовувати Webpack
+- розбивати код вручну без потреби
+- імпортувати великі бібліотеки у Client Components
+
+#### Best practices
+
+- Максимально використовувати Server Components
+- Мінімізувати `use client`
+- Використовувати dynamic import для важких UI
+- Довіряти автоматичному code splitting
+
+**Коротко:**
+
+- Code splitting у Next.js 16+ працює автоматично
+- Поділ відбувається за маршрутами та компонентами
+- Server Components суттєво зменшують JS-бандл
+- Dynamic imports — для важких або опційних частин UI
+
+</details>
+
+<details>
+<summary>19. Як Next.js оптимізує початкове завантаження сторінки?</summary>
+
+#### Next.js
+
+У **Next.js 16+** оптимізація початкового завантаження сторінки — це результат
+**поєднання кількох автоматичних механізмів**, які зменшують час до першого
+рендеру та покращують UX.
+
+#### Ключові механізми оптимізації
+
+1. Server Components за замовчуванням
+
+- більшість компонентів виконуються на сервері
+- у браузер потрапляє мінімум JavaScript
+- швидший First Contentful Paint (FCP)
+
+```tsx
+export default async function Page() {
+  const data = await getData();
+  return <div>{data.title}</div>;
+}
+```
+
+2. Автоматичний code splitting
+
+- JS ділиться по маршрутах
+- завантажується тільки потрібний код
+- зменшення initial bundle
+
+3. Streaming та partial rendering
+
+- HTML віддається частинами
+- UI зʼявляється ще до завершення всіх запитів
+- користувач бачить контент швидше
+
+4. Prefetching навігації
+
+- наступні сторінки підвантажуються у фоні
+- навігація відбувається майже миттєво
+
+5. Оптимізація зображень
+
+`next/image`:
+
+- lazy loading
+- адаптивні розміри
+- сучасні формати (AVIF / WebP)
+
+6. Оптимізація шрифтів
+
+`next/font`:
+
+- self-hosted
+- preload
+- без CLS
+
+7. Кешування та revalidation
+
+- контроль кешу через `fetch`
+- SSG / ISR зменшують кількість SSR
+- швидка доставка контенту
+
+#### Що розробнику робити не потрібно
+
+- вручну оптимізувати бандл
+- писати кастомний SSR
+- налаштовувати CDN
+
+#### Best practices
+
+- Використовувати Server Components
+- Мінімізувати Client Components
+- Не вимикати prefetch без потреби
+- Правильно керувати кешуванням
+
+**Коротко:**
+
+- Next.js мінімізує JS за рахунок Server Components
+- Code splitting і streaming прискорюють рендер
+- Зображення та шрифти оптимізуються автоматично
+- Більшість оптимізацій працює з коробки
+
+</details>
+
+<details>
+<summary>20. Які підходи до data fetching підтримує Next.js?</summary>
+
+#### Next.js
+
+У **Next.js 16+** data fetching є **частиною серверного рендерингу** та тісно
+інтегрований з **React Server Components**.  
+Основний інструмент — **вбудований `fetch`**, розширений механізмами кешування
+та revalidation.
+
+#### Основні підходи до data fetching
+
+1. Server-side data fetching (SSR)
+
+Дані отримуються **на кожен запит**.
+
+```TypeScript
+await fetch(url, { cache: 'no-store' });
+```
+
+**Коли використовувати:**
+
+- персоналізований контент
+- auth-залежні сторінки
+- дані, що часто змінюються
+
+2. Static data fetching (SSG)
+
+Дані отримуються під час білду і кешуються.
+
+```TypeScript
+await fetch(url);
+```
+
+**Коли використовувати:**
+
+- публічні сторінки
+- рідко змінюваний контент
+- максимальний performance і SEO
+
+3. Incremental Static Regeneration (ISR)
+
+Статичні сторінки з оновленням по таймеру.
+
+```TypeScript
+await fetch(url, { next: { revalidate: 60 } });
+```
+
+**Коли використовувати:**
+
+- блоги
+- каталоги
+- контент, що оновлюється періодично
+
+4. Data fetching у Server Components (default)
+
+Server Components:
+
+- виконуються на сервері
+- не потрапляють у JS-бандл
+- можуть напряму звертатись до БД або API
+
+```tsx
+export default async function Page() {
+  const data = await getData();
+  return <div>{data.title}</div>;
+}
+```
+
+5. Client-side data fetching
+
+Використовується лише для інтерактивних сценаріїв.
+
+```tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+
+export function ClientData() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/data')
+      .then(res => res.json())
+      .then(setData);
+  }, []);
+
+  return <div>{data}</div>;
+}
+```
+
+**Коли використовувати:**
+
+- real-time UI
+- browser-only API
+- локальний стан
+
+6. Data fetching через Route Handlers
+
+Для побудови API всередині Next.js:
+
+```TypeScript
+// app/api/posts/route.ts
+export async function GET() {
+  return Response.json({ posts: [] });
+}
+```
+
+#### Важливі принципи
+
+- `fetch` у Next.js кешується за замовчуванням
+- Кеш керується через `cache` та `revalidate`
+- `useEffect` не є основним підходом
+- Server Components — пріоритет
+
+**Коротко:**
+
+- Next.js підтримує SSR, SSG, ISR і client fetching
+- Основний підхід — data fetching у Server Components
+- Кешування та revalidation керують поведінкою
+- Правильний вибір стратегії критичний для performance
+
+</details>
