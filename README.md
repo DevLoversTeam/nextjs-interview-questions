@@ -1824,3 +1824,127 @@ export default async function Page() {
 - Більшість оптимізацій працює з коробки
 
 </details>
+
+<details>
+<summary>20. Які підходи до data fetching підтримує Next.js?</summary>
+
+#### Next.js
+
+У **Next.js 16+** data fetching є **частиною серверного рендерингу** та тісно
+інтегрований з **React Server Components**.  
+Основний інструмент — **вбудований `fetch`**, розширений механізмами кешування
+та revalidation.
+
+#### Основні підходи до data fetching
+
+1. Server-side data fetching (SSR)
+
+Дані отримуються **на кожен запит**.
+
+```TypeScript
+await fetch(url, { cache: 'no-store' });
+```
+
+**Коли використовувати:**
+
+- персоналізований контент
+- auth-залежні сторінки
+- дані, що часто змінюються
+
+2. Static data fetching (SSG)
+
+Дані отримуються під час білду і кешуються.
+
+```TypeScript
+await fetch(url);
+```
+
+**Коли використовувати:**
+
+- публічні сторінки
+- рідко змінюваний контент
+- максимальний performance і SEO
+
+3. Incremental Static Regeneration (ISR)
+
+Статичні сторінки з оновленням по таймеру.
+
+```TypeScript
+await fetch(url, { next: { revalidate: 60 } });
+```
+
+**Коли використовувати:**
+
+- блоги
+- каталоги
+- контент, що оновлюється періодично
+
+4. Data fetching у Server Components (default)
+
+Server Components:
+
+- виконуються на сервері
+- не потрапляють у JS-бандл
+- можуть напряму звертатись до БД або API
+
+```tsx
+export default async function Page() {
+  const data = await getData();
+  return <div>{data.title}</div>;
+}
+```
+
+5. Client-side data fetching
+
+Використовується лише для інтерактивних сценаріїв.
+
+```tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+
+export function ClientData() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/data')
+      .then(res => res.json())
+      .then(setData);
+  }, []);
+
+  return <div>{data}</div>;
+}
+```
+
+**Коли використовувати:**
+
+- real-time UI
+- browser-only API
+- локальний стан
+
+6. Data fetching через Route Handlers
+
+Для побудови API всередині Next.js:
+
+```TypeScript
+// app/api/posts/route.ts
+export async function GET() {
+  return Response.json({ posts: [] });
+}
+```
+
+#### Важливі принципи
+
+- `fetch` у Next.js кешується за замовчуванням
+- Кеш керується через `cache` та `revalidate`
+- `useEffect` не є основним підходом
+- Server Components — пріоритет
+
+**Коротко:**
+
+- Next.js підтримує SSR, SSG, ISR і client fetching
+- Основний підхід — data fetching у Server Components
+- Кешування та revalidation керують поведінкою
+- Правильний вибір стратегії критичний для performance
+
+</details>
