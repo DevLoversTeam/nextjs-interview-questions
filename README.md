@@ -1643,3 +1643,99 @@ import Link from 'next/link';
 - Може бути вимкнений для окремих маршрутів
 
 </details>
+
+<details>
+<summary>18. Як Next.js реалізує code splitting?</summary>
+
+#### Next.js
+
+У **Next.js** **code splitting** реалізований **автоматично** та є частиною
+філософії _performance by default_.  
+Розробнику **не потрібно вручну налаштовувати поділ коду** — Next.js робить це
+на рівні маршрутизації та компонентів.
+
+#### Основні рівні code splitting у Next.js
+
+1. Code splitting за маршрутами
+
+Кожен маршрут (`page.tsx`) отримує **окремий JS-бандл**:
+
+```txt
+app/page.tsx        → bundle для /
+app/blog/page.tsx   → bundle для /blog
+```
+
+Завантажується лише код потрібної сторінки.
+
+2. Code splitting через React Server Components
+
+- Server Components не потрапляють у JS-бандл
+- Логіка та data fetching виконуються на сервері
+- У браузер передається лише результат
+
+```tsx
+export default async function Page() {
+  const data = await getData();
+  return <div>{data.title}</div>;
+}
+```
+
+Це суттєво зменшує розмір клієнтського JavaScript.
+
+3. Code splitting для Client Components
+
+Client Components:
+
+- виділяються в окремі чанки
+- завантажуються лише за потреби
+- ізольовані від серверної логіки
+
+```tsx
+'use client';
+
+export function InteractiveButton() {
+  return <button>Click</button>;
+}
+```
+
+4. Динамічний імпорт (next/dynamic)
+
+Для важких або рідко використовуваних компонентів:
+
+```tsx
+import dynamic from 'next/dynamic';
+
+const HeavyChart = dynamic(() => import('./HeavyChart'), {
+  ssr: false,
+});
+```
+
+Код завантажиться тільки коли компонент реально потрібен.
+
+#### Як code splitting працює з навігацією
+
+- Next.js prefetch-ить чанки для наступних сторінок
+- При кліку чанки вже в кеші
+- Навігація виглядає миттєвою
+
+#### Що не потрібно робити
+
+- вручну налаштовувати Webpack
+- розбивати код вручну без потреби
+- імпортувати великі бібліотеки у Client Components
+
+#### Best practices
+
+- Максимально використовувати Server Components
+- Мінімізувати `use client`
+- Використовувати dynamic import для важких UI
+- Довіряти автоматичному code splitting
+
+**Коротко:**
+
+- Code splitting у Next.js 16+ працює автоматично
+- Поділ відбувається за маршрутами та компонентами
+- Server Components суттєво зменшують JS-бандл
+- Dynamic imports — для важких або опційних частин UI
+
+</details>
