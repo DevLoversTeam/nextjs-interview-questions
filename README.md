@@ -1948,3 +1948,67 @@ export async function GET() {
 - Правильний вибір стратегії критичний для performance
 
 </details>
+
+<details>
+<summary>21. Що таке getStaticProps і коли його варто використовувати?</summary>
+
+#### Next.js
+
+**`getStaticProps`** — це функція з **Pages Router**, яка використовувалась для
+**Static Site Generation (SSG)**, тобто генерації сторінок **під час білду**.
+
+**У Next.js з App Router `getStaticProps` не використовується.** Він вважається
+**legacy API** і застосовується лише для підтримки старих проєктів.
+
+#### Як працював `getStaticProps` (історично)
+
+```TypeScript
+export async function getStaticProps() {
+  const data = await fetchData();
+
+  return {
+    props: { data },
+  };
+}
+```
+
+- виконувався під час білду
+- дані передавались у компонент сторінки
+- сторінка ставала статичною
+- підтримував ISR через revalidate
+
+#### Чому getStaticProps більше не потрібен
+
+**У App Router всі ці задачі вирішуються простіше та гнучкіше:**
+
+Заміна getStaticProps у Next.js
+
+```TypeScript
+await fetch(url); // SSG за замовчуванням
+```
+
+```TypeScript
+await fetch(url, { next: { revalidate: 60 } }); // ISR
+```
+
+- data fetching виконується напряму в компоненті
+- немає окремих lifecycle-функцій
+- працює з Server Components
+- менше boilerplate-коду
+
+#### Коли сьогодні можна побачити `getStaticProps`
+
+- у старих проєктах на Pages Router
+- під час міграції на App Router
+- у legacy-коді
+
+Не використовують у нових проєктах
+
+**Коротко:**
+
+- `getStaticProps` — legacy API Pages Router
+- У Next.js 16+ не використовується
+- Заміна — `fetch` у Server Components
+- Для нових проєктів обирають App Router
+
+</details>
