@@ -113,13 +113,11 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
 1. Рендеринг
 
 - **CRA**:
-
   - лише **Client-Side Rendering (CSR)**
   - HTML генерується в браузері
   - гірший SEO та повільніший first paint
 
 - **Next.js**:
-
   - **Server Components (default)**
   - **SSR / SSG / ISR**
   - streaming та partial rendering
@@ -128,13 +126,11 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
 2. Архітектура
 
 - **CRA**:
-
   - тільки frontend
   - відсутній серверний шар
   - API та auth — зовнішні сервіси
 
 - **Next.js**:
-
   - fullstack-фреймворк
   - Route Handlers, Server Actions, Middleware
   - безпечна робота з БД та секретами
@@ -142,12 +138,10 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
 3. Маршрутизація
 
 - **CRA**:
-
   - ручне налаштування (`react-router`)
   - вся логіка на клієнті
 
 - **Next.js**:
-
   - файлова маршрутизація (`app/`)
   - layouts, loading/error states
   - nested routing без додаткових бібліотек
@@ -155,12 +149,10 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
 4. Продуктивність та оптимізації
 
 - **CRA**:
-
   - мінімальні оптимізації
   - налаштовуються вручну
 
 - **Next.js**:
-
   - автоматичний code splitting
   - оптимізація зображень та шрифтів
   - менший JS-бандл завдяки Server Components
@@ -168,24 +160,20 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
 5. Статус проєкту
 
 - **CRA**:
-
   - проєкт **deprecated**
   - не рекомендований для нових застосунків
 
 - **Next.js**:
-
   - активно розвивається
   - стандарт де-факто для React у продакшені
 
 6. Використання в реальних проєктах
 
 - **CRA** підходить для:
-
   - навчальних або простих SPA
   - прототипів
 
 - **Next.js** підходить для:
-
   - SEO-орієнтованих застосунків
   - складних UI з серверною логікою
   - масштабованих продуктів
@@ -271,13 +259,11 @@ my-next-app/
 1. Рендеринг
 
 - **React SPA**:
-
   - лише **Client-Side Rendering (CSR)**
   - HTML формується в браузері
   - залежність від `useEffect` для data fetching
 
 - **Next.js**:
-
   - **React Server Components (default)**
   - підтримка **SSR / SSG / ISR**
   - data fetching на сервері без `useEffect`
@@ -286,13 +272,11 @@ my-next-app/
 2. Архітектурний підхід
 
 - **React SPA**:
-
   - лише frontend
   - бекенд — окремий сервіс
   - немає серверної логіки в проєкті
 
 - **Next.js**:
-
   - fullstack-фреймворк
   - Server Actions, Route Handlers, Middleware
   - безпечна робота з БД, токенами, секретами
@@ -300,12 +284,10 @@ my-next-app/
 3. Маршрутизація
 
 - **React SPA**:
-
   - потребує сторонніх бібліотек (`react-router`)
   - маршрути описуються вручну
 
 - **Next.js**:
-
   - файлова маршрутизація через `app/`
   - layouts, nested routes, loading/error стани
   - менше boilerplate-коду
@@ -313,12 +295,10 @@ my-next-app/
 4. Продуктивність
 
 - **React SPA**:
-
   - великий JS-бандл
   - рендеринг повністю на клієнті
 
 - **Next.js**:
-
   - автоматичний code splitting
   - менший JS-бандл завдяки Server Components
   - streaming та partial rendering
@@ -326,12 +306,10 @@ my-next-app/
 5. Налаштування та best practices
 
 - **React SPA**:
-
   - архітектурні рішення — на розробнику
   - легко припуститися помилок
 
 - **Next.js**:
-
   - opinionated фреймворк
   - вбудовані best practices
   - швидший старт для продакшену
@@ -2010,5 +1988,83 @@ await fetch(url, { next: { revalidate: 60 } }); // ISR
 - У Next.js 16+ не використовується
 - Заміна — `fetch` у Server Components
 - Для нових проєктів обирають App Router
+
+</details>
+
+<details>
+<summary>22. Що таке getServerSideProps і який тип рендерингу він дозволяє?</summary>
+
+#### Next.js
+
+**`getServerSideProps`** — це функція з **Pages Router**, яка використовувалась
+для реалізації **Server-Side Rendering (SSR)**, тобто **рендерингу сторінки на
+сервері при кожному запиті**.
+
+**У Next.js з App Router `getServerSideProps` не використовується.** Це **legacy
+API**, актуальне лише для підтримки старих проєктів.
+
+#### Як працював `getServerSideProps` (історично)
+
+```TypeScript
+export async function getServerSideProps(context) {
+  const data = await fetchData(context);
+
+  return {
+    props: { data },
+  };
+}
+```
+
+- виконувався на кожен HTTP-запит
+- мав доступ до `req`, `res`, cookies, headers
+- забезпечував SSR
+- сторінка не кешувалась за замовчуванням
+
+#### Який тип рендерингу він дозволяє
+
+**Server-Side Rendering (SSR)**
+
+- HTML генерується при кожному запиті
+- підходить для персоналізованого контенту
+- актуальні дані на момент запиту
+
+#### Чому `getServerSideProps` більше не потрібен у Next.js 16+
+
+У App Router SSR реалізується без окремих lifecycle-функцій — через керування
+кешуванням:
+
+#### Заміна `getServerSideProps` у App Router
+
+```TypeScript
+await fetch(url, { cache: 'no-store' });
+```
+
+Або примусово:
+
+```TypeScript
+export const dynamic = 'force-dynamic';
+```
+
+**Переваги нового підходу:**
+
+- data fetching прямо в Server Components
+- менше boilerplate-коду
+- інтеграція з React Server Components
+- краща продуктивність і гнучкість
+
+#### Коли сьогодні можна зустріти `getServerSideProps`
+
+- у legacy-проєктах
+- під час міграції з Pages Router
+- у старих навчальних матеріалах
+
+**Не використовується в нових проєктах**
+
+**Коротко:**
+
+- `getServerSideProps` дозволяв SSR у Pages Router
+- Виконувався на кожен запит
+- У Next.js 16+ не використовується
+- Заміна — SSR через `fetch` і динамічний рендеринг в App Router
 
 </details>
