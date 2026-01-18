@@ -2068,3 +2068,92 @@ export const dynamic = 'force-dynamic';
 - Заміна — SSR через `fetch` і динамічний рендеринг в App Router
 
 </details>
+
+<details>
+<summary>23. Як реалізувати інкрементальну статичну регенерацію (ISR) у Next.js?</summary>
+
+#### Next.js
+
+У **Next.js** **Incremental Static Regeneration (ISR)** дозволяє поєднати
+**швидкість статичних сторінок** з **можливістю оновлювати дані без повного
+ребілду**.  
+ISR реалізується через **керування кешуванням `fetch`** в App Router.
+
+1. Базова реалізація ISR
+
+Щоб увімкнути ISR, потрібно вказати час **revalidation** у `fetch`:
+
+```TypeScript
+await fetch('https://api.example.com/posts', {
+  next: { revalidate: 60 },
+});
+```
+
+- сторінка генерується статично
+- кеш оновлюється раз на 60 секунд
+- користувачі завжди отримують швидкий HTML
+
+2. ISR у Server Components
+
+ISR використовується без окремих функцій, напряму в компоненті:
+
+```TypeScript
+export default async function Page() {
+  const posts = await fetch(
+    'https://api.example.com/posts',
+    { next: { revalidate: 300 } }
+  ).then(res => res.json());
+
+  return <PostsList posts={posts} />;
+}
+```
+
+3. ISR для динамічних маршрутів
+
+Для динамічних сторінок ISR поєднується з generateStaticParams:
+
+```TypeScript
+export async function generateStaticParams() {
+  return [{ id: '1' }, { id: '2' }];
+}
+await fetch(url, { next: { revalidate: 60 } });
+```
+
+4. On-demand revalidation (опціонально)
+
+Next.js підтримує ручне оновлення кешу через Route Handlers:
+
+```TypeScript
+import { revalidatePath } from 'next/cache';
+
+revalidatePath('/blog');
+```
+
+**Використовується для:**
+
+- CMS
+- адмін-панелей
+- webhooks
+
+5. Коли використовувати ISR
+
+**ISR доцільний, якщо:**
+
+- контент змінюється нечасто
+- важлива швидкість
+- небажаний повний rebuild
+
+**Приклади:**
+
+- блоги
+- каталоги
+- маркетингові сторінки
+
+**Коротко:**
+
+- ISR реалізується через fetch з revalidate
+- Працює у Server Components
+- Підходить для контенту, що оновлюється періодично
+- Не потребує окремих lifecycle-функцій
+
+</details>
