@@ -113,13 +113,11 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
 1. Рендеринг
 
 - **CRA**:
-
   - лише **Client-Side Rendering (CSR)**
   - HTML генерується в браузері
   - гірший SEO та повільніший first paint
 
 - **Next.js**:
-
   - **Server Components (default)**
   - **SSR / SSG / ISR**
   - streaming та partial rendering
@@ -128,13 +126,11 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
 2. Архітектура
 
 - **CRA**:
-
   - тільки frontend
   - відсутній серверний шар
   - API та auth — зовнішні сервіси
 
 - **Next.js**:
-
   - fullstack-фреймворк
   - Route Handlers, Server Actions, Middleware
   - безпечна робота з БД та секретами
@@ -142,12 +138,10 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
 3. Маршрутизація
 
 - **CRA**:
-
   - ручне налаштування (`react-router`)
   - вся логіка на клієнті
 
 - **Next.js**:
-
   - файлова маршрутизація (`app/`)
   - layouts, loading/error states
   - nested routing без додаткових бібліотек
@@ -155,12 +149,10 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
 4. Продуктивність та оптимізації
 
 - **CRA**:
-
   - мінімальні оптимізації
   - налаштовуються вручну
 
 - **Next.js**:
-
   - автоматичний code splitting
   - оптимізація зображень та шрифтів
   - менший JS-бандл завдяки Server Components
@@ -168,24 +160,20 @@ React-застосунку (SPA), тоді як **Next.js** — **повноці
 5. Статус проєкту
 
 - **CRA**:
-
   - проєкт **deprecated**
   - не рекомендований для нових застосунків
 
 - **Next.js**:
-
   - активно розвивається
   - стандарт де-факто для React у продакшені
 
 6. Використання в реальних проєктах
 
 - **CRA** підходить для:
-
   - навчальних або простих SPA
   - прототипів
 
 - **Next.js** підходить для:
-
   - SEO-орієнтованих застосунків
   - складних UI з серверною логікою
   - масштабованих продуктів
@@ -271,13 +259,11 @@ my-next-app/
 1. Рендеринг
 
 - **React SPA**:
-
   - лише **Client-Side Rendering (CSR)**
   - HTML формується в браузері
   - залежність від `useEffect` для data fetching
 
 - **Next.js**:
-
   - **React Server Components (default)**
   - підтримка **SSR / SSG / ISR**
   - data fetching на сервері без `useEffect`
@@ -286,13 +272,11 @@ my-next-app/
 2. Архітектурний підхід
 
 - **React SPA**:
-
   - лише frontend
   - бекенд — окремий сервіс
   - немає серверної логіки в проєкті
 
 - **Next.js**:
-
   - fullstack-фреймворк
   - Server Actions, Route Handlers, Middleware
   - безпечна робота з БД, токенами, секретами
@@ -300,12 +284,10 @@ my-next-app/
 3. Маршрутизація
 
 - **React SPA**:
-
   - потребує сторонніх бібліотек (`react-router`)
   - маршрути описуються вручну
 
 - **Next.js**:
-
   - файлова маршрутизація через `app/`
   - layouts, nested routes, loading/error стани
   - менше boilerplate-коду
@@ -313,12 +295,10 @@ my-next-app/
 4. Продуктивність
 
 - **React SPA**:
-
   - великий JS-бандл
   - рендеринг повністю на клієнті
 
 - **Next.js**:
-
   - автоматичний code splitting
   - менший JS-бандл завдяки Server Components
   - streaming та partial rendering
@@ -326,12 +306,10 @@ my-next-app/
 5. Налаштування та best practices
 
 - **React SPA**:
-
   - архітектурні рішення — на розробнику
   - легко припуститися помилок
 
 - **Next.js**:
-
   - opinionated фреймворк
   - вбудовані best practices
   - швидший старт для продакшену
@@ -1946,5 +1924,883 @@ export async function GET() {
 - Основний підхід — data fetching у Server Components
 - Кешування та revalidation керують поведінкою
 - Правильний вибір стратегії критичний для performance
+
+</details>
+
+<details>
+<summary>21. Що таке getStaticProps і коли його варто використовувати?</summary>
+
+#### Next.js
+
+**`getStaticProps`** — це функція з **Pages Router**, яка використовувалась для
+**Static Site Generation (SSG)**, тобто генерації сторінок **під час білду**.
+
+**У Next.js з App Router `getStaticProps` не використовується.** Він вважається
+**legacy API** і застосовується лише для підтримки старих проєктів.
+
+#### Як працював `getStaticProps` (історично)
+
+```TypeScript
+export async function getStaticProps() {
+  const data = await fetchData();
+
+  return {
+    props: { data },
+  };
+}
+```
+
+- виконувався під час білду
+- дані передавались у компонент сторінки
+- сторінка ставала статичною
+- підтримував ISR через revalidate
+
+#### Чому getStaticProps більше не потрібен
+
+**У App Router всі ці задачі вирішуються простіше та гнучкіше:**
+
+Заміна getStaticProps у Next.js
+
+```TypeScript
+await fetch(url); // SSG за замовчуванням
+```
+
+```TypeScript
+await fetch(url, { next: { revalidate: 60 } }); // ISR
+```
+
+- data fetching виконується напряму в компоненті
+- немає окремих lifecycle-функцій
+- працює з Server Components
+- менше boilerplate-коду
+
+#### Коли сьогодні можна побачити `getStaticProps`
+
+- у старих проєктах на Pages Router
+- під час міграції на App Router
+- у legacy-коді
+
+Не використовують у нових проєктах
+
+**Коротко:**
+
+- `getStaticProps` — legacy API Pages Router
+- У Next.js 16+ не використовується
+- Заміна — `fetch` у Server Components
+- Для нових проєктів обирають App Router
+
+</details>
+
+<details>
+<summary>22. Що таке getServerSideProps і який тип рендерингу він дозволяє?</summary>
+
+#### Next.js
+
+**`getServerSideProps`** — це функція з **Pages Router**, яка використовувалась
+для реалізації **Server-Side Rendering (SSR)**, тобто **рендерингу сторінки на
+сервері при кожному запиті**.
+
+**У Next.js з App Router `getServerSideProps` не використовується.** Це **legacy
+API**, актуальне лише для підтримки старих проєктів.
+
+#### Як працював `getServerSideProps` (історично)
+
+```TypeScript
+export async function getServerSideProps(context) {
+  const data = await fetchData(context);
+
+  return {
+    props: { data },
+  };
+}
+```
+
+- виконувався на кожен HTTP-запит
+- мав доступ до `req`, `res`, cookies, headers
+- забезпечував SSR
+- сторінка не кешувалась за замовчуванням
+
+#### Який тип рендерингу він дозволяє
+
+**Server-Side Rendering (SSR)**
+
+- HTML генерується при кожному запиті
+- підходить для персоналізованого контенту
+- актуальні дані на момент запиту
+
+#### Чому `getServerSideProps` більше не потрібен у Next.js 16+
+
+У App Router SSR реалізується без окремих lifecycle-функцій — через керування
+кешуванням:
+
+#### Заміна `getServerSideProps` у App Router
+
+```TypeScript
+await fetch(url, { cache: 'no-store' });
+```
+
+Або примусово:
+
+```TypeScript
+export const dynamic = 'force-dynamic';
+```
+
+**Переваги нового підходу:**
+
+- data fetching прямо в Server Components
+- менше boilerplate-коду
+- інтеграція з React Server Components
+- краща продуктивність і гнучкість
+
+#### Коли сьогодні можна зустріти `getServerSideProps`
+
+- у legacy-проєктах
+- під час міграції з Pages Router
+- у старих навчальних матеріалах
+
+**Не використовується в нових проєктах**
+
+**Коротко:**
+
+- `getServerSideProps` дозволяв SSR у Pages Router
+- Виконувався на кожен запит
+- У Next.js 16+ не використовується
+- Заміна — SSR через `fetch` і динамічний рендеринг в App Router
+
+</details>
+
+<details>
+<summary>23. Як реалізувати інкрементальну статичну регенерацію (ISR) у Next.js?</summary>
+
+#### Next.js
+
+У **Next.js** **Incremental Static Regeneration (ISR)** дозволяє поєднати
+**швидкість статичних сторінок** з **можливістю оновлювати дані без повного
+ребілду**.  
+ISR реалізується через **керування кешуванням `fetch`** в App Router.
+
+1. Базова реалізація ISR
+
+Щоб увімкнути ISR, потрібно вказати час **revalidation** у `fetch`:
+
+```TypeScript
+await fetch('https://api.example.com/posts', {
+  next: { revalidate: 60 },
+});
+```
+
+- сторінка генерується статично
+- кеш оновлюється раз на 60 секунд
+- користувачі завжди отримують швидкий HTML
+
+2. ISR у Server Components
+
+ISR використовується без окремих функцій, напряму в компоненті:
+
+```TypeScript
+export default async function Page() {
+  const posts = await fetch(
+    'https://api.example.com/posts',
+    { next: { revalidate: 300 } }
+  ).then(res => res.json());
+
+  return <PostsList posts={posts} />;
+}
+```
+
+3. ISR для динамічних маршрутів
+
+Для динамічних сторінок ISR поєднується з generateStaticParams:
+
+```TypeScript
+export async function generateStaticParams() {
+  return [{ id: '1' }, { id: '2' }];
+}
+await fetch(url, { next: { revalidate: 60 } });
+```
+
+4. On-demand revalidation (опціонально)
+
+Next.js підтримує ручне оновлення кешу через Route Handlers:
+
+```TypeScript
+import { revalidatePath } from 'next/cache';
+
+revalidatePath('/blog');
+```
+
+**Використовується для:**
+
+- CMS
+- адмін-панелей
+- webhooks
+
+5. Коли використовувати ISR
+
+**ISR доцільний, якщо:**
+
+- контент змінюється нечасто
+- важлива швидкість
+- небажаний повний rebuild
+
+**Приклади:**
+
+- блоги
+- каталоги
+- маркетингові сторінки
+
+**Коротко:**
+
+- ISR реалізується через fetch з revalidate
+- Працює у Server Components
+- Підходить для контенту, що оновлюється періодично
+- Не потребує окремих lifecycle-функцій
+
+</details>
+
+<details>
+<summary>24. Чи можна виконувати client-side data fetching у Next.js?</summary>
+
+#### Next.js
+
+Так, **у Next.js client-side data fetching можливий**, але він **не є основним
+підходом**.  
+Next.js побудований навколо **Server Components**, тому клієнтське отримання
+даних використовується **лише для специфічних сценаріїв**.
+
+#### Як реалізується client-side data fetching
+
+Client-side data fetching можливий **тільки в Client Components**, які
+позначаються директивою `'use client'`.
+
+```tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+
+export default function ClientData() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/data')
+      .then(res => res.json())
+      .then(setData);
+  }, []);
+
+  return <div>{data?.title}</div>;
+}
+```
+
+**Коли client-side data fetching доцільний**
+
+- real-time оновлення (polling, WebSocket)
+- робота з browser-only API
+- локальний UI-стан
+- інтерактивні фільтри / пошук
+
+**Коли не варто використовувати**
+
+- для SEO-критичного контенту
+- для початкового рендеру сторінки
+- для доступу до секретів
+- для основних даних сторінки
+
+#### Best practices
+
+- Мінімізувати `use client`
+- Не дублювати server data fetching
+- Поєднувати з Server Components
+- Використовувати Route Handlers для API
+
+**Коротко:**
+
+- Client-side data fetching підтримується
+- Використовується лише у Client Components
+- Підходить для інтерактивних сценаріїв
+- Основний підхід у Next.js 16+ — server-side data fetching
+
+</details>
+
+<details>
+<summary>25. Поясни різницю між useEffect та getStaticProps.</summary>
+
+#### Next.js
+
+`useEffect` і `getStaticProps` — це **принципово різні механізми**, які працюють
+**у різних середовищах** і вирішують **різні задачі**.
+
+#### `useEffect`
+
+`useEffect` — це **React-хук**, який виконується **на клієнті після рендеру
+компонента**.
+
+```tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+
+export default function ClientComponent() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/data')
+      .then(res => res.json())
+      .then(setData);
+  }, []);
+
+  return <div>{data}</div>;
+}
+```
+
+#### Характеристики:
+
+- виконується в браузері
+- працює після першого рендеру
+- не впливає на HTML, який отримує пошуковий робот
+- підходить для інтерактивних сценаріїв
+
+#### `getStaticProps` (legacy)
+
+`getStaticProps` — це API Pages Router, яке використовувалось для Static Site
+Generation (SSG).
+
+```TypeScript
+export async function getStaticProps() {
+  const data = await fetchData();
+
+  return {
+    props: { data },
+  };
+}
+```
+
+#### Характеристики:
+
+- виконувався на сервері під час білду
+- генерував статичний HTML
+- забезпечував SEO
+- не використовується в Next.js 16+ (App Router)
+
+#### Актуальний підхід у Next.js 16+
+
+У App Router обидва кейси замінюються data fetching у Server Components:
+
+```tsx
+export default async function Page() {
+  const data = await fetch('https://api.example.com/data').then(res =>
+    res.json()
+  );
+  return <div>{data.title}</div>;
+}
+```
+
+- серверний рендеринг
+- SEO
+- мінімум JS
+- без `useEffect` і `getStaticProps`
+
+**Коротко:**
+
+- `useEffect` — клієнтський хук після рендеру
+- `getStaticProps` — server-side SSG (Pages Router)
+- У Next.js 16+ обидва замінені data fetching у Server Components
+
+</details>
+
+<details>
+<summary>26. Як створити API-роут у Next.js?</summary>
+
+#### Next.js
+
+У **Next.js 16+** API-роути реалізуються через **Route Handlers**, які
+розміщуються в директорії **`app/api`**.  
+Це сучасна заміна `pages/api/*` і стандартний підхід у **App Router**.
+
+1. Створення API-роуту (Route Handler)
+
+API-роут створюється файлом **`route.ts`** або **`route.js`**.
+
+```txt
+app/api/posts/route.ts
+```
+
+```TypeScript
+// app/api/posts/route.ts
+export async function GET() {
+  return Response.json({ posts: [] });
+}
+```
+
+Маршрут буде доступний за адресою:
+
+```txt
+GET /api/posts
+```
+
+2. Підтримка HTTP-методів
+
+Route Handlers підтримують стандартні HTTP-методи:
+
+- `GET`
+- `POST`
+- `PUT`
+- `PATCH`
+- `DELETE`
+
+```TypeScript
+export async function POST(request: Request) {
+  const body = await request.json();
+
+  return Response.json(
+    { success: true, body },
+    { status: 201 }
+  );
+}
+```
+
+3. Отримання параметрів та headers
+
+**Query parameters:**
+
+export async function GET(request: Request) { const { searchParams } = new
+URL(request.url); const page = searchParams.get('page');
+
+return Response.json({ page }); }
+
+**Headers / cookies:** import { headers, cookies } from 'next/headers';
+
+const token = cookies().get('token'); const userAgent =
+headers().get('user-agent');
+
+4. Динамічні API-роути
+
+```txt
+app/api/posts/[id]/route.ts
+```
+
+```TypeScript
+export async function GET(
+  _: Request,
+  { params }: { params: { id: string } }
+) {
+  return Response.json({ id: params.id });
+}
+```
+
+5. Типові кейси використання
+
+- REST API
+- backend-for-frontend (BFF)
+- проксі до зовнішніх API
+- on-demand revalidation
+- auth-ендпоінти
+
+#### Best practices
+
+- Використовувати Route Handlers замість Pages API
+- Тримати API-логику серверною
+- Не повертати секрети
+- Поєднувати з Server Actions для мутацій
+
+**Коротко:**
+
+- API-роути в Next.js 16+ створюються через app/api/\*/route.ts
+- Підтримуються всі основні HTTP-методи
+- Це сучасна заміна pages/api
+- Route Handlers — стандарт для бекенд-логіки в App Router
+
+</details>
+
+<details>
+<summary>27. Поясни, як обробляти параметри запиту (query parameters) в API-роутах Next.js.</summary>
+
+#### Next.js
+
+У **Next.js 16+** параметри запиту (**query parameters**) в API-роутах
+обробляються через **обʼєкт `Request`**, який відповідає стандарту Web Fetch
+API.  
+Next.js **не використовує власний API** для query — усе базується на `URL` та
+`URLSearchParams`.
+
+1. Отримання query parameters
+
+У Route Handler доступний обʼєкт `Request`, з якого можна отримати URL:
+
+```TypeScript
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+
+  const page = searchParams.get('page');
+  const limit = searchParams.get('limit');
+
+  return Response.json({ page, limit });
+}
+```
+
+2. Параметри з дефолтними значеннями
+
+```TypeScript
+const page = Number(searchParams.get('page') ?? 1);
+const limit = Number(searchParams.get('limit') ?? 10);
+```
+
+3. Кілька значень одного параметра
+
+```url
+/api/posts?tag=js&tag=next
+```
+
+```TypeScript
+const tags = searchParams.getAll('tag');
+```
+
+4. Обробка та валідація параметрів
+
+Next.js не валідовує query parameters автоматично, тому:
+
+```TypeScript
+if (!page || page < 1) {
+  return Response.json(
+    { error: 'Invalid page' },
+    { status: 400 }
+  );
+}
+```
+
+5. Використання з динамічними API-роутами
+
+Query parameters працюють разом із динамічними сегментами:
+
+```url
+app/api/posts/[id]/route.ts
+```
+
+```TypeScript
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const { searchParams } = new URL(request.url);
+  const includeComments = searchParams.get('comments');
+
+  return Response.json({
+    id: params.id,
+    includeComments,
+  });
+}
+```
+
+#### Best practices
+
+- Завжди валідовувати query parameters
+- Перетворювати типи (string → number)
+- Не довіряти значенням з URL
+- Повернути коректні HTTP-статуси
+
+**Коротко:**
+
+- Query parameters обробляються через Request та URLSearchParams
+- Підтримуються множинні значення
+- Валідація — відповідальність розробника
+- Це стандартний Web API підхід у Next.js 16+
+
+</details>
+
+<details>
+<summary>28. Як Next.js працює з HTTP-методами в API-роутах?</summary>
+
+#### Next.js
+
+У **Next.js 16+** API-роути реалізуються через **Route Handlers**
+(`app/api/**/route.ts`), де **кожен HTTP-метод описується окремою експортованою
+функцією**.  
+Це відповідає стандартам **Web Fetch API** і робить API-логіку декларативною та
+зрозумілою.
+
+1. Підтримувані HTTP-методи
+
+Route Handlers підтримують основні методи:
+
+- `GET` — отримання даних
+- `POST` — створення ресурсу
+- `PUT` — повне оновлення
+- `PATCH` — часткове оновлення
+- `DELETE` — видалення
+
+2. Базовий приклад з кількома методами
+
+```TypeScript
+// app/api/posts/route.ts
+export async function GET() {
+  return Response.json({ posts: [] });
+}
+
+export async function POST(request: Request) {
+  const body = await request.json();
+  return Response.json({ created: true, body }, { status: 201 });
+}
+```
+
+URL:
+
+```bash
+/api/posts
+```
+
+3. Динамічні API-роути з методами
+
+```txt
+app/api/posts/[id]/route.ts
+```
+
+```TypeScript
+export async function GET(
+  \_: Request, { params }: { params: { id: string } }
+) {
+  return Response.json({ id: params.id });
+}
+
+export async function DELETE(
+  \_: Request, { params }: { params: { id: string } }
+) {
+  return Response.json({ deleted: params.id });
+}
+```
+
+4. Обробка тіла запиту (body)
+
+- `request.json()` — для JSON
+- `request.formData()` — для форм
+- `request.text()` — для plain text
+
+```TypeScript
+export async function PATCH(request: Request) {
+  const data = await request.json();
+  return Response.json({ updated: data });
+}
+```
+
+5. HTTP-статуси та заголовки
+
+```TypeScript
+return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+  status: 401,
+  headers: { 'Content-Type': 'application/json' },
+});
+```
+
+6. Кешування та методи
+
+- `GET` може кешуватись (SSG / ISR)
+- `POST`, `PUT`, `PATCH`, `DELETE` — завжди динамічні
+- Мутації не кешуються
+
+#### Best practices
+
+- Розділяти логіку по HTTP-методах
+- Повертати коректні статуси
+- Валідовувати вхідні дані
+- Тримати API-роути тонкими (BFF-підхід)
+- Для мутацій з UI розглядати Server Actions
+
+**Коротко:**
+
+- HTTP-методи описуються окремими експортами (`GET`, `POST`, тощо)
+- Route Handlers відповідають стандарту Fetch API
+- `GET` — для читання, інші — для мутацій
+- Це сучасний і рекомендований підхід у Next.js 16+
+
+</details>
+
+<details>
+<summary>29. Як підключити CSS-модулі у застосунку Next.js?</summary>
+
+#### Next.js
+
+У **Next.js** CSS-модулі — це **вбудований і рекомендований спосіб локальної
+стилізації компонентів**.  
+Вони забезпечують **scope стилів на рівні компонента**, уникаючи конфліктів
+класів.
+
+1. Створення CSS-модуля
+
+CSS-модуль — це файл з суфіксом **`.module.css`**:
+
+```txt
+components/
+ ├─ Button.tsx
+ └─ Button.module.css
+```
+
+```CSS
+/* Button.module.css */
+.button {
+  background: black;
+  color: white;
+  padding: 8px 16px;
+}
+```
+
+2. Підключення CSS-модуля в компоненті
+
+```tsx
+import styles from './Button.module.css';
+
+export function Button() {
+  return <button className={styles.button}>Click</button>;
+}
+```
+
+- `styles.button` — унікальний згенерований клас
+- конфлікти імен класів виключені
+
+3. Де можна використовувати CSS-модулі
+
+CSS-модулі можна використовувати:
+
+- у Server Components
+- у Client Components
+- у будь-яких React-компонентах
+
+Вони не залежать від `'use client'`.
+
+4. CSS-модулі та App Router
+
+У App Router:
+
+- CSS-модулі імпортуються напряму в компоненти
+- не потребують глобальної реєстрації
+- автоматично оптимізуються та tree-shake-яться
+
+5. Комбінація з іншими стилями
+
+```tsx
+import clsx from 'clsx';
+import styles from './Card.module.css';
+
+<div className={clsx(styles.card, styles.active)} />;
+```
+
+6. Обмеження CSS-модулів
+
+- не можна використовувати для глобальних стилів
+- не підходять для reset або typography
+- не працюють у `globals.css`
+
+Для глобальних стилів використовується `app/globals.css`.
+
+#### Best practices
+
+- CSS-модулі — для компонентних стилів
+- `globals.css` — лише для глобальних правил
+- Тримати стилі поруч з компонентом
+- Не змішувати CSS-модулі з inline-стилями без потреби
+
+**Коротко:**
+
+- CSS-модулі підключаються через `.module.css`
+- Забезпечують локальний scope стилів
+- Працюють у Server та Client Components
+- Це стандартний спосіб компонентної стилізації в Next.js 16+
+
+</details>
+
+<details>
+<summary>30. Чи можна використовувати глобальні стилі в Next.js? Як саме?</summary>
+
+#### Next.js
+
+Так, **у Next.js 16+ глобальні стилі підтримуються**, але їх використання
+**строго регламентоване** архітектурою **App Router**.  
+Глобальні стилі застосовуються **лише для базових правил**, а не для стилізації
+компонентів.
+
+1. Файл глобальних стилів
+
+Глобальні стилі оголошуються у файлі **`globals.css`**.
+
+```txt
+app/
+ ├─ layout.tsx
+ ├─ page.tsx
+ └─ globals.css
+```
+
+2. Підключення глобальних стилів
+
+Глобальні стилі імпортуються один раз у кореневому layout:
+
+```tsx
+// app/layout.tsx
+import './globals.css';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+Імпорт можливий тільки у layout або entry-файлах, не в компонентах.
+
+3. Що варто писати в глобальних стилях
+
+Глобальні стилі підходять для:
+
+- CSS reset / normalize
+- базової typography
+- змінних (`:root`)
+- тем (dark / light)
+- стилів для `body`, `html`
+
+```CSS
+/* app/globals.css */
+:root {
+  --primary: #000;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui;
+}
+```
+
+4. Що не варто писати в глобальних стилях
+
+- стилі конкретних компонентів
+- utility-класи для UI
+- логіку, яку можна ізолювати
+
+**Для цього використовують:**
+
+- CSS-модулі
+- Tailwind CSS
+- CSS-in-JS (обмежено)
+
+5. Глобальні стилі та App Router
+
+- застосовуються до всього застосунку
+- автоматично оптимізуються
+- працюють у Server та Client Components
+- не потребують 'use client'
+
+#### Best practices
+
+- Мінімальний обсяг глобальних стилів
+- Компонентні стилі — через CSS-модулі або Tailwind
+- Не імпортувати глобальні стилі в компонентах
+
+**Коротко:**
+
+- Глобальні стилі підтримуються в Next.js 16+
+- Підключаються через `app/globals.css`
+- Імпортуються лише в `layout.tsx`
+- Використовуються для базових, а не компонентних стилів
 
 </details>
