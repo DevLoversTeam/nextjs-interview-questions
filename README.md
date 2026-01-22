@@ -2611,3 +2611,96 @@ return new Response(JSON.stringify({ error: 'Unauthorized' }), {
 - Це сучасний і рекомендований підхід у Next.js 16+
 
 </details>
+
+<details>
+<summary>29. Як підключити CSS-модулі у застосунку Next.js?</summary>
+
+#### Next.js
+
+У **Next.js** CSS-модулі — це **вбудований і рекомендований спосіб локальної
+стилізації компонентів**.  
+Вони забезпечують **scope стилів на рівні компонента**, уникаючи конфліктів
+класів.
+
+1. Створення CSS-модуля
+
+CSS-модуль — це файл з суфіксом **`.module.css`**:
+
+```txt
+components/
+ ├─ Button.tsx
+ └─ Button.module.css
+```
+
+```CSS
+/* Button.module.css */
+.button {
+  background: black;
+  color: white;
+  padding: 8px 16px;
+}
+```
+
+2. Підключення CSS-модуля в компоненті
+
+```tsx
+import styles from './Button.module.css';
+
+export function Button() {
+  return <button className={styles.button}>Click</button>;
+}
+```
+
+- `styles.button` — унікальний згенерований клас
+- конфлікти імен класів виключені
+
+3. Де можна використовувати CSS-модулі
+
+CSS-модулі можна використовувати:
+
+- у Server Components
+- у Client Components
+- у будь-яких React-компонентах
+
+Вони не залежать від `'use client'`.
+
+4. CSS-модулі та App Router
+
+У App Router:
+
+- CSS-модулі імпортуються напряму в компоненти
+- не потребують глобальної реєстрації
+- автоматично оптимізуються та tree-shake-яться
+
+5. Комбінація з іншими стилями
+
+```tsx
+import clsx from 'clsx';
+import styles from './Card.module.css';
+
+<div className={clsx(styles.card, styles.active)} />;
+```
+
+6. Обмеження CSS-модулів
+
+- не можна використовувати для глобальних стилів
+- не підходять для reset або typography
+- не працюють у `globals.css`
+
+Для глобальних стилів використовується `app/globals.css`.
+
+#### Best practices
+
+- CSS-модулі — для компонентних стилів
+- `globals.css` — лише для глобальних правил
+- Тримати стилі поруч з компонентом
+- Не змішувати CSS-модулі з inline-стилями без потреби
+
+**Коротко:**
+
+- CSS-модулі підключаються через `.module.css`
+- Забезпечують локальний scope стилів
+- Працюють у Server та Client Components
+- Це стандартний спосіб компонентної стилізації в Next.js 16+
+
+</details>
