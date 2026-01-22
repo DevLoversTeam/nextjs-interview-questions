@@ -2157,3 +2157,66 @@ revalidatePath('/blog');
 - Не потребує окремих lifecycle-функцій
 
 </details>
+
+<details>
+<summary>24. Чи можна виконувати client-side data fetching у Next.js?</summary>
+
+#### Next.js
+
+Так, **у Next.js client-side data fetching можливий**, але він **не є основним
+підходом**.  
+Next.js побудований навколо **Server Components**, тому клієнтське отримання
+даних використовується **лише для специфічних сценаріїв**.
+
+#### Як реалізується client-side data fetching
+
+Client-side data fetching можливий **тільки в Client Components**, які
+позначаються директивою `'use client'`.
+
+```tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+
+export default function ClientData() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/data')
+      .then(res => res.json())
+      .then(setData);
+  }, []);
+
+  return <div>{data?.title}</div>;
+}
+```
+
+**Коли client-side data fetching доцільний**
+
+- real-time оновлення (polling, WebSocket)
+- робота з browser-only API
+- локальний UI-стан
+- інтерактивні фільтри / пошук
+
+**Коли не варто використовувати**
+
+- для SEO-критичного контенту
+- для початкового рендеру сторінки
+- для доступу до секретів
+- для основних даних сторінки
+
+#### Best practices
+
+- Мінімізувати `use client`
+- Не дублювати server data fetching
+- Поєднувати з Server Components
+- Використовувати Route Handlers для API
+
+**Коротко:**
+
+- Client-side data fetching підтримується
+- Використовується лише у Client Components
+- Підходить для інтерактивних сценаріїв
+- Основний підхід у Next.js 16+ — server-side data fetching
+
+</details>
