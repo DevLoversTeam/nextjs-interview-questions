@@ -2306,3 +2306,107 @@ export default async function Page() {
 - У Next.js 16+ обидва замінені data fetching у Server Components
 
 </details>
+
+<details>
+<summary>26. Як створити API-роут у Next.js?</summary>
+
+#### Next.js
+
+У **Next.js 16+** API-роути реалізуються через **Route Handlers**, які
+розміщуються в директорії **`app/api`**.  
+Це сучасна заміна `pages/api/*` і стандартний підхід у **App Router**.
+
+1. Створення API-роуту (Route Handler)
+
+API-роут створюється файлом **`route.ts`** або **`route.js`**.
+
+```txt
+app/api/posts/route.ts
+```
+
+```TypeScript
+// app/api/posts/route.ts
+export async function GET() {
+  return Response.json({ posts: [] });
+}
+```
+
+Маршрут буде доступний за адресою:
+
+```txt
+GET /api/posts
+```
+
+2. Підтримка HTTP-методів
+
+Route Handlers підтримують стандартні HTTP-методи:
+
+- `GET`
+- `POST`
+- `PUT`
+- `PATCH`
+- `DELETE`
+
+```TypeScript
+export async function POST(request: Request) {
+  const body = await request.json();
+
+  return Response.json(
+    { success: true, body },
+    { status: 201 }
+  );
+}
+```
+
+3. Отримання параметрів та headers
+
+**Query parameters:**
+
+export async function GET(request: Request) { const { searchParams } = new
+URL(request.url); const page = searchParams.get('page');
+
+return Response.json({ page }); }
+
+**Headers / cookies:** import { headers, cookies } from 'next/headers';
+
+const token = cookies().get('token'); const userAgent =
+headers().get('user-agent');
+
+4. Динамічні API-роути
+
+```txt
+app/api/posts/[id]/route.ts
+```
+
+```TypeScript
+export async function GET(
+  _: Request,
+  { params }: { params: { id: string } }
+) {
+  return Response.json({ id: params.id });
+}
+```
+
+5. Типові кейси використання
+
+- REST API
+- backend-for-frontend (BFF)
+- проксі до зовнішніх API
+- on-demand revalidation
+- auth-ендпоінти
+
+#### Best practices
+
+- Використовувати Route Handlers замість Pages API
+- Тримати API-логику серверною
+- Не повертати секрети
+- Поєднувати з Server Actions для мутацій
+
+**Коротко:**
+
+- API-роути в Next.js 16+ створюються через app/api/\*/route.ts
+- Підтримуються всі основні HTTP-методи
+- Це сучасна заміна pages/api
+- Route Handlers — стандарт для бекенд-логіки в App Router
+
+</details>
