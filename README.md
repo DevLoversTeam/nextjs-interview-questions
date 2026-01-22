@@ -2874,3 +2874,135 @@ CSS-in-JS (наприклад, styled-components, emotion):
 - У Next.js 16+ рекомендовано мінімізувати CSS-in-JS
 
 </details>
+
+<details>
+<summary>32. Як інтегрувати CSS-фреймворки на кшталт Tailwind CSS v4 у Next.js-проєкт?</summary>
+
+#### Next.js
+
+У **Next.js 16+** інтеграція **Tailwind CSS v4** є **максимально простою** та
+добре узгоджується з **App Router** і **Server Components**.  
+Tailwind v4 позбувся застарілих конфігурацій і працює за принципом _zero-config
+by default_.
+
+1. Встановлення Tailwind CSS v4
+
+Найпростіший спосіб — під час створення проєкту:
+
+```bash
+npx create-next-app@latest
+```
+
+**У CLI обрати:**
+
+Tailwind CSS
+
+**Або додати в існуючий проєкт**
+
+```bash
+npm install tailwindcss@latest
+```
+
+PostCSS, autoprefixer та додаткові плагіни не потрібні.
+
+2. Глобальні стилі (обовʼязково)
+
+У Tailwind CSS v4 не використовуються директиви
+
+`@tailwind base / components / utilities`.
+
+Єдиний правильний спосіб підключення — через @import.
+
+```CSS
+/* app/globals.css */
+@import "tailwindcss";
+```
+
+3. Підключення глобальних стилів у App Router
+
+```tsx
+// app/layout.tsx
+import './globals.css';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+- глобальні стилі імпортуються один раз
+- працюють у Server та Client Components
+- не потребують `'use client'`
+
+4. Конфігурація Tailwind (опціонально)
+
+У Tailwind v4 `tailwind.config` не є обовʼязковим. Він потрібен лише для
+кастомізації (теми, кольори, плагіни).
+
+```TypeScript
+// tailwind.config.ts
+import type { Config } from 'tailwindcss';
+
+const config: Config = {
+  theme: {
+    extend: {
+      colors: {
+        brand: '#000',
+      },
+    },
+  },
+};
+
+export default config;
+```
+
+Поле content не використовується.
+
+5. Використання Tailwind у компонентах
+
+Tailwind-класи можна використовувати:
+
+- у Server Components
+- у Client Components
+- без додаткових налаштувань
+
+```tsx
+export default function Page() {
+  return <h1 className="text-2xl font-bold text-center">Hello Tailwind v4</h1>;
+}
+```
+
+6. Поєднання з іншими підходами
+
+Tailwind CSS v4 можна комбінувати з:
+
+- CSS-модулями
+- clsx / classnames
+- умовною стилізацією
+
+```tsx
+<div className={clsx('p-4', isActive && 'bg-green-500')} />
+```
+
+#### Best practices у Next.js 16+
+
+- Використовувати Tailwind як основний спосіб стилізації
+- Мінімізувати глобальні стилі
+- Не створювати tailwind.config без потреби
+- Поєднувати з Server Components для кращої продуктивності
+
+**Коротко:**
+
+- Tailwind CSS v4 інтегрується через @import "tailwindcss"
+- tailwind.config — опціональний, без content
+- Повністю сумісний з Next.js 16+ та App Router
+- Простий, швидкий і сучасний підхід до стилізації
+
+</details>
