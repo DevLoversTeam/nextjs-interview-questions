@@ -2505,3 +2505,109 @@ export async function GET(
 - Це стандартний Web API підхід у Next.js 16+
 
 </details>
+
+<details>
+<summary>28. Як Next.js працює з HTTP-методами в API-роутах?</summary>
+
+#### Next.js
+
+У **Next.js 16+** API-роути реалізуються через **Route Handlers**
+(`app/api/**/route.ts`), де **кожен HTTP-метод описується окремою експортованою
+функцією**.  
+Це відповідає стандартам **Web Fetch API** і робить API-логіку декларативною та
+зрозумілою.
+
+1. Підтримувані HTTP-методи
+
+Route Handlers підтримують основні методи:
+
+- `GET` — отримання даних
+- `POST` — створення ресурсу
+- `PUT` — повне оновлення
+- `PATCH` — часткове оновлення
+- `DELETE` — видалення
+
+2. Базовий приклад з кількома методами
+
+```TypeScript
+// app/api/posts/route.ts
+export async function GET() {
+  return Response.json({ posts: [] });
+}
+
+export async function POST(request: Request) {
+  const body = await request.json();
+  return Response.json({ created: true, body }, { status: 201 });
+}
+```
+
+URL:
+
+```bash
+/api/posts
+```
+
+3. Динамічні API-роути з методами
+
+```txt
+app/api/posts/[id]/route.ts
+```
+
+```TypeScript
+export async function GET(
+  \_: Request, { params }: { params: { id: string } }
+) {
+  return Response.json({ id: params.id });
+}
+
+export async function DELETE(
+  \_: Request, { params }: { params: { id: string } }
+) {
+  return Response.json({ deleted: params.id });
+}
+```
+
+4. Обробка тіла запиту (body)
+
+- `request.json()` — для JSON
+- `request.formData()` — для форм
+- `request.text()` — для plain text
+
+```TypeScript
+export async function PATCH(request: Request) {
+  const data = await request.json();
+  return Response.json({ updated: data });
+}
+```
+
+5. HTTP-статуси та заголовки
+
+```TypeScript
+return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+  status: 401,
+  headers: { 'Content-Type': 'application/json' },
+});
+```
+
+6. Кешування та методи
+
+- `GET` може кешуватись (SSG / ISR)
+- `POST`, `PUT`, `PATCH`, `DELETE` — завжди динамічні
+- Мутації не кешуються
+
+#### Best practices
+
+- Розділяти логіку по HTTP-методах
+- Повертати коректні статуси
+- Валідовувати вхідні дані
+- Тримати API-роути тонкими (BFF-підхід)
+- Для мутацій з UI розглядати Server Actions
+
+**Коротко:**
+
+- HTTP-методи описуються окремими експортами (`GET`, `POST`, тощо)
+- Route Handlers відповідають стандарту Fetch API
+- `GET` — для читання, інші — для мутацій
+- Це сучасний і рекомендований підхід у Next.js 16+
+
+</details>
