@@ -2410,3 +2410,98 @@ export async function GET(
 - Route Handlers — стандарт для бекенд-логіки в App Router
 
 </details>
+
+<details>
+<summary>27. Поясни, як обробляти параметри запиту (query parameters) в API-роутах Next.js.</summary>
+
+#### Next.js
+
+У **Next.js 16+** параметри запиту (**query parameters**) в API-роутах
+обробляються через **обʼєкт `Request`**, який відповідає стандарту Web Fetch
+API.  
+Next.js **не використовує власний API** для query — усе базується на `URL` та
+`URLSearchParams`.
+
+1. Отримання query parameters
+
+У Route Handler доступний обʼєкт `Request`, з якого можна отримати URL:
+
+```TypeScript
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+
+  const page = searchParams.get('page');
+  const limit = searchParams.get('limit');
+
+  return Response.json({ page, limit });
+}
+```
+
+2. Параметри з дефолтними значеннями
+
+```TypeScript
+const page = Number(searchParams.get('page') ?? 1);
+const limit = Number(searchParams.get('limit') ?? 10);
+```
+
+3. Кілька значень одного параметра
+
+```url
+/api/posts?tag=js&tag=next
+```
+
+```TypeScript
+const tags = searchParams.getAll('tag');
+```
+
+4. Обробка та валідація параметрів
+
+Next.js не валідовує query parameters автоматично, тому:
+
+```TypeScript
+if (!page || page < 1) {
+  return Response.json(
+    { error: 'Invalid page' },
+    { status: 400 }
+  );
+}
+```
+
+5. Використання з динамічними API-роутами
+
+Query parameters працюють разом із динамічними сегментами:
+
+```url
+app/api/posts/[id]/route.ts
+```
+
+```TypeScript
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const { searchParams } = new URL(request.url);
+  const includeComments = searchParams.get('comments');
+
+  return Response.json({
+    id: params.id,
+    includeComments,
+  });
+}
+```
+
+#### Best practices
+
+- Завжди валідовувати query parameters
+- Перетворювати типи (string → number)
+- Не довіряти значенням з URL
+- Повернути коректні HTTP-статуси
+
+**Коротко:**
+
+- Query parameters обробляються через Request та URLSearchParams
+- Підтримуються множинні значення
+- Валідація — відповідальність розробника
+- Це стандартний Web API підхід у Next.js 16+
+
+</details>
