@@ -2220,3 +2220,89 @@ export default function ClientData() {
 - Основний підхід у Next.js 16+ — server-side data fetching
 
 </details>
+
+<details>
+<summary>25. Поясни різницю між useEffect та getStaticProps.</summary>
+
+#### Next.js
+
+`useEffect` і `getStaticProps` — це **принципово різні механізми**, які працюють
+**у різних середовищах** і вирішують **різні задачі**.
+
+#### `useEffect`
+
+`useEffect` — це **React-хук**, який виконується **на клієнті після рендеру
+компонента**.
+
+```tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+
+export default function ClientComponent() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/data')
+      .then(res => res.json())
+      .then(setData);
+  }, []);
+
+  return <div>{data}</div>;
+}
+```
+
+#### Характеристики:
+
+- виконується в браузері
+- працює після першого рендеру
+- не впливає на HTML, який отримує пошуковий робот
+- підходить для інтерактивних сценаріїв
+
+#### `getStaticProps` (legacy)
+
+`getStaticProps` — це API Pages Router, яке використовувалось для Static Site
+Generation (SSG).
+
+```TypeScript
+export async function getStaticProps() {
+  const data = await fetchData();
+
+  return {
+    props: { data },
+  };
+}
+```
+
+#### Характеристики:
+
+- виконувався на сервері під час білду
+- генерував статичний HTML
+- забезпечував SEO
+- не використовується в Next.js 16+ (App Router)
+
+#### Актуальний підхід у Next.js 16+
+
+У App Router обидва кейси замінюються data fetching у Server Components:
+
+```tsx
+export default async function Page() {
+  const data = await fetch('https://api.example.com/data').then(res =>
+    res.json()
+  );
+  return <div>{data.title}</div>;
+}
+```
+
+- серверний рендеринг
+- SEO
+- мінімум JS
+- без `useEffect` і `getStaticProps`
+
+**Коротко:**
+
+- `useEffect` — клієнтський хук після рендеру
+- `getStaticProps` — server-side SSG (Pages Router)
+- У Next.js 16+ обидва замінені data fetching у Server Components
+
+</details>
