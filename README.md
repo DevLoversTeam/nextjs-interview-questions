@@ -3080,3 +3080,101 @@ import Image from 'next/image';
 - Рекомендований для більшості зображень у Next.js 16+
 
 </details>
+
+<details>
+<summary>34. Як Next.js працює з шрифтами?</summary>
+
+#### Next.js
+
+У **Next.js** робота зі шрифтами реалізована через вбудований модуль
+**`next/font`**, який забезпечує **автоматичну оптимізацію шрифтів** без ручних
+`<link>` або сторонніх CDN.  
+Це зменшує **CLS**, прискорює **initial load** та покращує **Core Web Vitals**.
+
+#### Основний інструмент — `next/font`
+
+`next/font` дозволяє:
+
+- self-host-ити шрифти
+- автоматично preload-ити потрібні файли
+- уникати FOIT/FOUT
+- мінімізувати CLS
+
+Працює **за замовчуванням** з App Router та Server Components.
+
+1. Google Fonts через `next/font/google`
+
+```TypeScript
+// app/fonts.ts
+import { Inter } from 'next/font/google';
+
+export const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+});
+```
+
+Використання в layout:
+
+```tsx
+// app/layout.tsx
+import { inter } from './fonts';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" className={inter.className}>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+2. Локальні шрифти через `next/font/local`
+
+```TypeScript
+import localFont from 'next/font/local';
+
+export const myFont = localFont({
+  src: './MyFont.woff2',
+  display: 'swap',
+});
+```
+
+- шрифти зберігаються у проєкті
+- повний контроль над файлами
+- ідеально для кастомних брендових шрифтів
+
+3. Оптимізації з коробки
+
+`next/font` автоматично:
+
+- підвантажує лише потрібні glyph-и
+- додає `preload`
+- генерує fallback
+- усуває layout shift
+
+**Не потрібно:**
+
+- `<link rel="preconnect">`
+- `<link rel="stylesheet">`
+- сторонні CDN для шрифтів
+
+#### Best practices у Next.js
+
+- Використовувати тільки `next/font`
+- Підключати шрифти у `layout.tsx`
+- Обмежувати кількість font-weights
+- Уникати ручних `<link>` до шрифтів
+
+**Коротко:**
+
+- Next.js використовує `next/font` для шрифтів
+- Шрифти self-host-яться та preload-яться автоматично
+- Значно зменшується CLS і initial load
+- Це стандарт і best practice для App Router
+
+</details>
