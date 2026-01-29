@@ -3178,3 +3178,127 @@ export const myFont = localFont({
 - Це стандарт і best practice для App Router
 
 </details>
+
+<details>
+<summary>35. Як уникнути зайвого JavaScript у клієнтському бандлі?</summary>
+
+#### Next.js
+
+У **Next.js** мінімізація клієнтського JavaScript — ключова перевага
+фреймворку.  
+Це досягається завдяки **Server Components за замовчуванням**, автоматичному
+**code splitting** та чіткому розділенню server/client логіки.
+
+1. Використовувати Server Components за замовчуванням
+
+Усі компоненти в App Router є **Server Components**, якщо явно не вказано
+інакше.
+
+```tsx
+export default async function Page() {
+  const data = await getData();
+  return <div>{data.title}</div>;
+}
+```
+
+- не потрапляють у JS-бандл
+- виконуються на сервері
+- можуть робити data fetching напряму
+
+2. Мінімізувати використання `'use client'`
+
+Директива `'use client'`:
+
+- переводить компонент у Client Component
+- тягне за собою весь dependency tree
+
+```tsx
+'use client';
+```
+
+**Правило:**
+
+використовувати `use client` лише для інтерактивності.
+
+3. Виносити інтерактивність у дрібні Client Components
+
+**Погано:**
+
+```tsx
+'use client';
+export default function Page() {
+  // велика сторінка стає клієнтською
+}
+```
+
+**Добре:**
+
+```tsx
+export default function Page() {
+  return (
+    <>
+      <StaticContent />
+      <ClientButton />
+    </>
+  );
+}
+```
+
+```tsx
+// ClientButton.tsx
+'use client';
+export function ClientButton() {
+  return <button>Click</button>;
+}
+```
+
+4. Уникати client-side data fetching без потреби
+
+Не рекомендовано для основного контенту:
+
+```tsx
+useEffect(() => {
+  fetch('/api/data').then(...);
+}, []);
+```
+
+Краще:
+
+- data fetching у Server Components
+- кешування через `fetch` + `revalidate`
+
+5. Використовувати dynamic import для важких компонентів
+
+```tsx
+import dynamic from 'next/dynamic';
+
+const Chart = dynamic(() => import('./Chart'), {
+  ssr: false,
+});
+```
+
+- код завантажується лише за потреби
+- зменшує initial bundle
+
+6. Обережно з бібліотеками
+
+- не імпортувати важкі бібліотеки в Client Components
+- не використовувати універсальні UI-бібліотеки без аналізу
+- віддавати перевагу tree-shakable пакетам
+
+7. Використовувати вбудовані можливості Next.js
+
+- `next/image` замість `<img>`
+- `next/font` замість `<link>`
+- Server Actions замість client API calls
+
+Це зменшує JS і покращує performance.
+
+**Коротко:**
+
+- Server Components — основний інструмент зменшення JS
+- `'use client'` слід використовувати точково
+- Інтерактивність виноситься в малі компоненти
+- Dynamic imports і server-side data fetching зменшують клієнтський бандл
+
+</details>
