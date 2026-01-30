@@ -3392,3 +3392,111 @@ Vercel з коробки підтримує:
 - Найкраща сумісність і продуктивність “з коробки”
 
 </details>
+
+<details>
+<summary>37. Як налаштувати власні доменні імена при деплої Next.js-застосунку?</summary>
+
+#### Next.js
+
+У **Next.js** налаштування власного домену **не залежить від коду**, а
+виконується **на рівні хостинг-платформи**.  
+Найпростіший і рекомендований варіант — **деплой на Vercel**, де підтримка
+кастомних доменів реалізована _out of the box_.
+
+1. Додавання домену у Vercel
+
+1. Зайти в **Vercel Dashboard**
+1. Обрати потрібний проєкт
+1. Перейти в **Settings → Domains**
+1. Додати домен (наприклад `example.com`)
+
+Vercel автоматично:
+
+- перевірить конфігурацію
+- підкаже потрібні DNS-записи
+
+2. Налаштування DNS у доменного провайдера
+
+Залежно від типу домену, Vercel запропонує:
+
+**Варіант A** — apex-домен (`example.com`)
+
+```txt
+Type: A
+Name: @
+Value: 76.76.21.21
+```
+
+**Варіант B** — піддомен (www.example.com)
+
+```txt
+Type: CNAME
+Name: www
+Value: cname.vercel-dns.com
+```
+
+DNS-записи додаються у панелі керування доменом, не у Next.js.
+
+3. HTTPS і SSL
+
+- Vercel автоматично видає SSL-сертифікат
+- HTTPS вмикається без ручних налаштувань
+- Сертифікати автоматично оновлюються
+
+Не потрібно налаштовувати Let’s Encrypt вручну.
+
+4. Redirect між www / non-www
+
+Рекомендовано мати єдиний канонічний домен.
+
+**Через Vercel Domains (рекомендовано)**
+
+увімкнути redirect у налаштуваннях домену
+
+**Або через Next.js Middleware**
+
+```TypeScript
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(req: NextRequest) {
+  const url = req.nextUrl;
+
+  if (url.hostname === 'www.example.com') {
+    url.hostname = 'example.com';
+    return NextResponse.redirect(url);
+  }
+}
+```
+
+5. Кілька доменів / середовищ
+
+Vercel підтримує:
+
+- `example.com` — production
+- `preview.example.com` — preview
+- auto-generated домени для PR
+
+Це не потребує змін у коді Next.js.
+
+6. Важливі моменти для Next.js 16+
+
+- App Router не потребує додаткової конфігурації
+- routing працює однаково для всіх доменів
+- ISR, Server Actions і Middleware працюють без змін
+
+#### Best practices
+
+- Використовувати HTTPS завжди
+- Налаштувати canonical-домен (www або non-www)
+- Не хардкодити домен у коді
+- Для env-залежних URL використовувати env variables
+
+**Коротко:**
+
+- Кастомні домени налаштовуються на рівні хостингу
+- На Vercel це робиться через Settings → Domains
+- SSL і HTTPS вмикаються автоматично
+- Next.js не потребує змін у коді для доменів
+
+</details>
