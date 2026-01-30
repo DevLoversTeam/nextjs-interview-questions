@@ -3302,3 +3302,93 @@ const Chart = dynamic(() => import('./Chart'), {
 - Dynamic imports і server-side data fetching зменшують клієнтський бандл
 
 </details>
+
+<details>
+<summary>36. Які переваги деплою Next.js-застосунку на Vercel?</summary>
+
+#### Next.js
+
+**Vercel** — це **офіційна платформа-хостинг для Next.js**, створена тією ж
+командою.  
+Вона забезпечує **максимальну сумісність з Next.js**, автоматизуючи більшість
+продакшен-налаштувань.
+
+#### Ключові переваги деплою на Vercel
+
+1. Zero-config деплой
+
+- не потрібні кастомні сервери
+- автоматичний білд та деплой
+- повна підтримка App Router
+
+```txt
+git push → build → deploy
+```
+
+2. Підтримка всіх можливостей Next.js
+
+Vercel з коробки підтримує:
+
+- App Router
+- React Server Components
+- Server Actions
+- Route Handlers
+- ISR та on-demand revalidation
+- Streaming та partial rendering
+
+Без workaround-ів та кастомних конфігів
+
+3. Edge Network та продуктивність
+
+- глобальна CDN
+- edge-функції для Middleware
+- мінімальний latency
+- кращі Core Web Vitals
+
+4. Автоматичне масштабування
+
+- serverless / edge execution
+- масштабування без ручного керування
+- стабільна робота при пікових навантаженнях
+
+5. ISR та кешування “як задумано”
+
+- ISR працює нативно
+- правильне кешування `fetch`
+- revalidation без додаткових налаштувань
+
+На інших хостингах ISR часто обмежений або нестабільний.
+
+6. Preview Deployments
+
+- окремий деплой для кожного PR
+- унікальний URL
+- зручно для code review та QA
+
+7. Інтеграція з GitHub
+
+- автоматичні деплої з `main` / `develop`
+- статуси білду в PR
+- швидкий rollback
+
+8. Зручна робота зі змінними середовища
+
+- UI для env variables
+- різні env для preview / production
+- безпечне зберігання секретів
+
+#### Коли Vercel — найкращий вибір
+
+- сучасні Next.js проєкти
+- SEO-критичні застосунки
+- стартапи та продакшен MVP
+- проєкти з активним ISR та Server Actions
+
+**Коротко:**
+
+- Vercel — офіційна платформа для Next.js
+- Повна підтримка App Router і Server Components
+- Zero-config деплой і глобальна CDN
+- Найкраща сумісність і продуктивність “з коробки”
+
+</details>
