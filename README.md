@@ -3742,3 +3742,136 @@ client/
 - Чітке розділення server / client коду — must-have
 
 </details>
+
+<details>
+<summary>40. Як організувати компоненти для кращої масштабованості?</summary>
+
+#### Next.js
+
+У **Next.js** масштабованість компонентів досягається завдяки **Server
+Components за замовчуванням**, **feature-oriented підходу** та **чіткому
+розділенню відповідальностей**.  
+Ключова ідея — **менше Client Components, більше композиції**.
+
+1. Використовувати Server Components як стандарт
+
+У App Router всі компоненти є серверними, якщо явно не вказано `'use client'`.
+
+```tsx
+export default async function Page() {
+  const data = await getData();
+  return <List items={data} />;
+}
+```
+
+Переваги:
+
+не потрапляють у клієнтський бандл
+
+безпечний доступ до БД/секретів
+
+краща продуктивність
+
+2. Виносити інтерактивність у малі Client Components
+
+Погано (великий клієнтський компонент):
+
+```tsx
+'use client';
+export default function Page() {
+  /* багато логіки */
+}
+```
+
+Добре (точкова інтерактивність):
+
+```tsx
+export default function Page() {
+  return (
+    <>
+      <StaticSection />
+      <InteractiveToggle />
+    </>
+  );
+}
+```
+
+```tsx
+// InteractiveToggle.tsx
+'use client';
+export function InteractiveToggle() {
+  /* мінімум логіки */
+}
+```
+
+3. Feature-oriented структура (рекомендовано)
+
+Групувати компоненти за фічами, а не за типами.
+
+```txt
+features/
+ ├─ auth/
+ │   ├─ components/
+ │   ├─ actions.ts
+ │   └─ services.ts
+ ├─ dashboard/
+ │   ├─ components/
+ │   └─ queries.ts
+```
+
+Це зменшує coupling і спрощує розвиток.
+
+4. Розділяти “presentational” та “container” компоненти
+
+**Presentational** — UI без бізнес-логіки **Container** — data fetching та
+orchestration (частіше серверні)
+
+```tsx
+// Container (Server Component)
+export default async function UsersSection() {
+  const users = await getUsers();
+  return <UsersList users={users} />;
+}
+// Presentational
+export function UsersList({ users }) {
+  return users.map(u => <div key={u.id}>{u.name}</div>);
+}
+```
+
+5. Уникати “god components”
+
+- Один компонент робить все
+- Композиція з дрібних компонентів
+
+```tsx
+<Page>
+  <Header />
+  <Filters />
+  <Table />
+  <Pagination />
+</Page>
+```
+
+6. Чітко розділяти server / client код
+
+**Рекомендації:**
+
+- серверна логіка → `lib/`, `actions.ts`, `services.ts`
+- клієнтська логіка → `hooks/`, `.client.tsx`
+- не імпортувати server-код у Client Components
+
+7. Стандартизувати неймінг і правила
+
+- `*.client.tsx` — клієнтські компоненти
+- `*.server.ts` — серверні утиліти
+- Єдині правила імпортів та структури
+- Документувати патерни в README
+
+**Коротко:**
+
+- Server Components — база для масштабованості
+- Client Components — лише для інтерактивності
+- Feature-oriented структура спрощує розвиток
+- Композиція > великі монолітні компоненти
+
+</details>
