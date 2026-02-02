@@ -3624,3 +3624,121 @@ Server Actions у Netlify не підтримуються повноцінно.
 - Vercel залишається більш нативним варіантом для Next.js
 
 </details>
+
+<details>
+<summary>39. Яка структура папок рекомендується для великих Next.js-застосунків?</summary>
+
+#### Next.js
+
+У **Next.js** рекомендована структура папок базується на **App Router**,
+**розділенні відповідальностей** та **feature-oriented підході**.  
+Мета — зробити код **масштабованим**, **читабельним** і **зручним для команд з
+кількох розробників**.
+
+1. Базова структура для великого проєкту
+
+```txt
+app/
+ ├─ (public)/              # публічні маршрути
+ │   ├─ page.tsx
+ │   └─ layout.tsx
+ ├─ (auth)/                # route group (не впливає на URL)
+ │   ├─ login/
+ │   └─ register/
+ ├─ dashboard/             # feature / domain
+ │   ├─ page.tsx
+ │   ├─ layout.tsx
+ │   └─ loading.tsx
+ ├─ api/                   # Route Handlers
+ │   └─ users/
+ │       └─ route.ts
+ ├─ layout.tsx             # root layout
+ └─ globals.css
+```
+
+- `app/` — єдине джерело маршрутів
+- route groups `(( ))` — для логічного групування
+- кожен feature має власний layout і стани
+
+2. Feature-oriented структура (рекомендовано)
+
+Для великих застосунків краще групувати код за фічами, а не за типами файлів.
+
+```txt
+features/
+ ├─ auth/
+ │   ├─ components/
+ │   ├─ actions.ts
+ │   ├─ services.ts
+ │   └─ types.ts
+ ├─ dashboard/
+ │   ├─ components/
+ │   ├─ queries.ts
+ │   └─ utils.ts
+```
+
+**Це:**
+
+- спрощує навігацію в коді
+- зменшує coupling
+- полегшує рефакторинг
+
+3. Загальні папки (shared / core)
+
+```txt
+components/        # спільні UI-компоненти
+lib/               # server-side helpers (db, auth, fetch)
+hooks/             # client hooks
+styles/            # CSS-модулі / tokens
+types/             # глобальні TypeScript типи
+```
+
+**Важливо:**
+
+- `lib/` — тільки серверний код
+- `hooks/` — тільки client-side
+- `components/` — без бізнес-логіки
+
+4. Розділення server / client логіки
+
+Рекомендовано явно відокремлювати:
+
+```txt
+lib/
+ ├─ db.ts          # server-only
+ ├─ auth.ts        # server-only
+components/
+ ├─ Button.tsx     # server або client
+ └─ Modal.client.tsx
+```
+
+**Або через директорії:**
+
+```txt
+server/
+client/
+```
+
+5. Що не рекомендується
+
+- одна велика папка components для всього
+- змішувати server і client код без структури
+- глибока вкладеність без сенсу
+- дублювання логіки між фічами
+
+6. Best practices для великих команд
+
+- Використовувати route groups
+- Тримати мінімум Client Components
+- Feature-based структура
+- Єдині правила неймінгу
+- Документувати архітектуру в README
+
+**Коротко:**
+
+- Основа — app/ з App Router
+- Feature-oriented структура — найкращий вибір
+- Route groups допомагають логічно організувати маршрути
+- Чітке розділення server / client коду — must-have
+
+</details>
