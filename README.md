@@ -2804,3 +2804,1074 @@ body {
 - Використовуються для базових, а не компонентних стилів
 
 </details>
+
+<details>
+<summary>31. Порівняй CSS-in-JS та традиційний CSS у контексті Next.js.</summary>
+
+#### Next.js
+
+У **Next.js** підтримуються **обидва підходи до стилізації** — як **традиційний
+CSS**, так і **CSS-in-JS**, але з різним рівнем доцільності та обмеженнями,
+особливо в контексті **Server Components**.
+
+#### Традиційний CSS у Next.js
+
+До традиційного CSS у Next.js належать:
+
+- **CSS-модулі (`.module.css`)**
+- **глобальні стилі (`globals.css`)**
+
+#### Переваги:
+
+- працює **у Server Components за замовчуванням**
+- не потребує `'use client'`
+- мінімальний runtime-overhead
+- краща продуктивність та менший JS-бандл
+- офіційно рекомендований підхід
+
+#### Недоліки:
+
+- менша динамічність стилів
+- логіку умовної стилізації потрібно вирішувати через класи
+
+#### CSS-in-JS у Next.js
+
+CSS-in-JS (наприклад, styled-components, emotion):
+
+- стилі описуються безпосередньо в JavaScript
+- часто залежать від props та стану
+
+#### Особливості в Next.js 16+:
+
+- потребує **Client Components**
+- додає JS у бандл
+- складніша інтеграція з Server Components
+- може вимагати додаткового налаштування для SSR
+
+#### Переваги:
+
+- висока динамічність стилів
+- зручна умовна стилізація
+- стилі тісно повʼязані з логікою компонента
+
+#### Недоліки:
+
+- не підходить для Server Components
+- збільшує initial JS
+- ускладнює архітектуру App Router
+
+#### Рекомендований підхід у Next.js 16+
+
+- **CSS-модулі** — для компонентних стилів
+- **globals.css** — для базових стилів
+- **CSS-in-JS** — лише за необхідності динамічних стилів
+- не використовувати CSS-in-JS без чіткої причини
+
+**Коротко:**
+
+- Традиційний CSS краще інтегрований з App Router
+- CSS-in-JS вимагає Client Components і збільшує JS
+- У Next.js 16+ рекомендовано мінімізувати CSS-in-JS
+
+</details>
+
+<details>
+<summary>32. Як інтегрувати CSS-фреймворки на кшталт Tailwind CSS v4 у Next.js-проєкт?</summary>
+
+#### Next.js
+
+У **Next.js 16+** інтеграція **Tailwind CSS v4** є **максимально простою** та
+добре узгоджується з **App Router** і **Server Components**.  
+Tailwind v4 позбувся застарілих конфігурацій і працює за принципом _zero-config
+by default_.
+
+1. Встановлення Tailwind CSS v4
+
+Найпростіший спосіб — під час створення проєкту:
+
+```bash
+npx create-next-app@latest
+```
+
+**У CLI обрати:**
+
+Tailwind CSS
+
+**Або додати в існуючий проєкт**
+
+```bash
+npm install tailwindcss@latest
+```
+
+PostCSS, autoprefixer та додаткові плагіни не потрібні.
+
+2. Глобальні стилі (обовʼязково)
+
+У Tailwind CSS v4 не використовуються директиви
+
+`@tailwind base / components / utilities`.
+
+Єдиний правильний спосіб підключення — через @import.
+
+```CSS
+/* app/globals.css */
+@import "tailwindcss";
+```
+
+3. Підключення глобальних стилів у App Router
+
+```tsx
+// app/layout.tsx
+import './globals.css';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+- глобальні стилі імпортуються один раз
+- працюють у Server та Client Components
+- не потребують `'use client'`
+
+4. Конфігурація Tailwind (опціонально)
+
+У Tailwind v4 `tailwind.config` не є обовʼязковим. Він потрібен лише для
+кастомізації (теми, кольори, плагіни).
+
+```TypeScript
+// tailwind.config.ts
+import type { Config } from 'tailwindcss';
+
+const config: Config = {
+  theme: {
+    extend: {
+      colors: {
+        brand: '#000',
+      },
+    },
+  },
+};
+
+export default config;
+```
+
+Поле content не використовується.
+
+5. Використання Tailwind у компонентах
+
+Tailwind-класи можна використовувати:
+
+- у Server Components
+- у Client Components
+- без додаткових налаштувань
+
+```tsx
+export default function Page() {
+  return <h1 className="text-2xl font-bold text-center">Hello Tailwind v4</h1>;
+}
+```
+
+6. Поєднання з іншими підходами
+
+Tailwind CSS v4 можна комбінувати з:
+
+- CSS-модулями
+- clsx / classnames
+- умовною стилізацією
+
+```tsx
+<div className={clsx('p-4', isActive && 'bg-green-500')} />
+```
+
+#### Best practices у Next.js 16+
+
+- Використовувати Tailwind як основний спосіб стилізації
+- Мінімізувати глобальні стилі
+- Не створювати tailwind.config без потреби
+- Поєднувати з Server Components для кращої продуктивності
+
+**Коротко:**
+
+- Tailwind CSS v4 інтегрується через @import "tailwindcss"
+- tailwind.config — опціональний, без content
+- Повністю сумісний з Next.js 16+ та App Router
+- Простий, швидкий і сучасний підхід до стилізації
+
+</details>
+
+<details>
+<summary>33. Що таке компонент Image і як він оптимізує продуктивність?</summary>
+
+#### Next.js
+
+Компонент **`Image`** з пакета **`next/image`** — це **вбудований інструмент
+оптимізації зображень** у Next.js 16+.  
+Він автоматично оптимізує завантаження зображень, зменшуючи **розмір трафіку**,
+**час першого рендеру** та **CLS** без ручних налаштувань.
+
+#### Основні оптимізації `Image`
+
+1. Автоматичний lazy loading
+
+- Зображення завантажуються **лише тоді**, коли зʼявляються у viewport
+- Зменшує initial load та TTI
+- Увімкнений **за замовчуванням**
+
+```tsx
+import Image from 'next/image';
+
+<Image src="/hero.png" alt="Hero" width={600} height={400} />;
+```
+
+2. Адаптивні розміри (responsive images)
+
+- Next.js генерує кілька версій зображення
+- Браузер отримує оптимальний розмір під конкретний екран
+- Менше байтів → швидше завантаження
+
+3. Сучасні формати зображень
+
+- Автоматично використовує WebP / AVIF, якщо підтримуються браузером
+- Не потребує ручної конвертації
+
+4. Запобігання layout shift (CLS)
+
+- `width` і `height` резервують місце в layout
+- Сторінка не «стрибає» під час завантаження
+
+```tsx
+<Image src="/photo.jpg" alt="Photo" width={300} height={200} />
+```
+
+5. Оптимізація на сервері
+
+- Зображення оптимізуються на сервері або edge
+- Кешуються та повторно використовуються
+- Працює з локальними та віддаленими зображеннями
+
+6. Пріоритетне завантаження (priority)
+
+Для hero-зображень можна вимкнути lazy loading:
+
+```tsx
+<Image src="/hero.png" alt="Hero" width={800} height={500} priority />
+```
+
+#### Best practices
+
+- Використовувати `Image` замість `<img>` для контентних зображень
+- Завжди вказувати `width` та `height`
+- `priority` — лише для above-the-fold
+- Для іконок/декору можна використовувати `<img>` або SVG
+
+**Коротко:**
+
+- `Image` — вбудований оптимізатор зображень у Next.js
+- Забезпечує lazy loading, responsive sizes та modern formats
+- Зменшує CLS і покращує initial load
+- Рекомендований для більшості зображень у Next.js 16+
+
+</details>
+
+<details>
+<summary>34. Як Next.js працює з шрифтами?</summary>
+
+#### Next.js
+
+У **Next.js** робота зі шрифтами реалізована через вбудований модуль
+**`next/font`**, який забезпечує **автоматичну оптимізацію шрифтів** без ручних
+`<link>` або сторонніх CDN.  
+Це зменшує **CLS**, прискорює **initial load** та покращує **Core Web Vitals**.
+
+#### Основний інструмент — `next/font`
+
+`next/font` дозволяє:
+
+- self-host-ити шрифти
+- автоматично preload-ити потрібні файли
+- уникати FOIT/FOUT
+- мінімізувати CLS
+
+Працює **за замовчуванням** з App Router та Server Components.
+
+1. Google Fonts через `next/font/google`
+
+```TypeScript
+// app/fonts.ts
+import { Inter } from 'next/font/google';
+
+export const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+});
+```
+
+Використання в layout:
+
+```tsx
+// app/layout.tsx
+import { inter } from './fonts';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" className={inter.className}>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+2. Локальні шрифти через `next/font/local`
+
+```TypeScript
+import localFont from 'next/font/local';
+
+export const myFont = localFont({
+  src: './MyFont.woff2',
+  display: 'swap',
+});
+```
+
+- шрифти зберігаються у проєкті
+- повний контроль над файлами
+- ідеально для кастомних брендових шрифтів
+
+3. Оптимізації з коробки
+
+`next/font` автоматично:
+
+- підвантажує лише потрібні glyph-и
+- додає `preload`
+- генерує fallback
+- усуває layout shift
+
+**Не потрібно:**
+
+- `<link rel="preconnect">`
+- `<link rel="stylesheet">`
+- сторонні CDN для шрифтів
+
+#### Best practices у Next.js
+
+- Використовувати тільки `next/font`
+- Підключати шрифти у `layout.tsx`
+- Обмежувати кількість font-weights
+- Уникати ручних `<link>` до шрифтів
+
+**Коротко:**
+
+- Next.js використовує `next/font` для шрифтів
+- Шрифти self-host-яться та preload-яться автоматично
+- Значно зменшується CLS і initial load
+- Це стандарт і best practice для App Router
+
+</details>
+
+<details>
+<summary>35. Як уникнути зайвого JavaScript у клієнтському бандлі?</summary>
+
+#### Next.js
+
+У **Next.js** мінімізація клієнтського JavaScript — ключова перевага
+фреймворку.  
+Це досягається завдяки **Server Components за замовчуванням**, автоматичному
+**code splitting** та чіткому розділенню server/client логіки.
+
+1. Використовувати Server Components за замовчуванням
+
+Усі компоненти в App Router є **Server Components**, якщо явно не вказано
+інакше.
+
+```tsx
+export default async function Page() {
+  const data = await getData();
+  return <div>{data.title}</div>;
+}
+```
+
+- не потрапляють у JS-бандл
+- виконуються на сервері
+- можуть робити data fetching напряму
+
+2. Мінімізувати використання `'use client'`
+
+Директива `'use client'`:
+
+- переводить компонент у Client Component
+- тягне за собою весь dependency tree
+
+```tsx
+'use client';
+```
+
+**Правило:**
+
+використовувати `use client` лише для інтерактивності.
+
+3. Виносити інтерактивність у дрібні Client Components
+
+**Погано:**
+
+```tsx
+'use client';
+export default function Page() {
+  // велика сторінка стає клієнтською
+}
+```
+
+**Добре:**
+
+```tsx
+export default function Page() {
+  return (
+    <>
+      <StaticContent />
+      <ClientButton />
+    </>
+  );
+}
+```
+
+```tsx
+// ClientButton.tsx
+'use client';
+export function ClientButton() {
+  return <button>Click</button>;
+}
+```
+
+4. Уникати client-side data fetching без потреби
+
+Не рекомендовано для основного контенту:
+
+```tsx
+useEffect(() => {
+  fetch('/api/data').then(...);
+}, []);
+```
+
+Краще:
+
+- data fetching у Server Components
+- кешування через `fetch` + `revalidate`
+
+5. Використовувати dynamic import для важких компонентів
+
+```tsx
+import dynamic from 'next/dynamic';
+
+const Chart = dynamic(() => import('./Chart'), {
+  ssr: false,
+});
+```
+
+- код завантажується лише за потреби
+- зменшує initial bundle
+
+6. Обережно з бібліотеками
+
+- не імпортувати важкі бібліотеки в Client Components
+- не використовувати універсальні UI-бібліотеки без аналізу
+- віддавати перевагу tree-shakable пакетам
+
+7. Використовувати вбудовані можливості Next.js
+
+- `next/image` замість `<img>`
+- `next/font` замість `<link>`
+- Server Actions замість client API calls
+
+Це зменшує JS і покращує performance.
+
+**Коротко:**
+
+- Server Components — основний інструмент зменшення JS
+- `'use client'` слід використовувати точково
+- Інтерактивність виноситься в малі компоненти
+- Dynamic imports і server-side data fetching зменшують клієнтський бандл
+
+</details>
+
+<details>
+<summary>36. Які переваги деплою Next.js-застосунку на Vercel?</summary>
+
+#### Next.js
+
+**Vercel** — це **офіційна платформа-хостинг для Next.js**, створена тією ж
+командою.  
+Вона забезпечує **максимальну сумісність з Next.js**, автоматизуючи більшість
+продакшен-налаштувань.
+
+#### Ключові переваги деплою на Vercel
+
+1. Zero-config деплой
+
+- не потрібні кастомні сервери
+- автоматичний білд та деплой
+- повна підтримка App Router
+
+```txt
+git push → build → deploy
+```
+
+2. Підтримка всіх можливостей Next.js
+
+Vercel з коробки підтримує:
+
+- App Router
+- React Server Components
+- Server Actions
+- Route Handlers
+- ISR та on-demand revalidation
+- Streaming та partial rendering
+
+Без workaround-ів та кастомних конфігів
+
+3. Edge Network та продуктивність
+
+- глобальна CDN
+- edge-функції для Middleware
+- мінімальний latency
+- кращі Core Web Vitals
+
+4. Автоматичне масштабування
+
+- serverless / edge execution
+- масштабування без ручного керування
+- стабільна робота при пікових навантаженнях
+
+5. ISR та кешування “як задумано”
+
+- ISR працює нативно
+- правильне кешування `fetch`
+- revalidation без додаткових налаштувань
+
+На інших хостингах ISR часто обмежений або нестабільний.
+
+6. Preview Deployments
+
+- окремий деплой для кожного PR
+- унікальний URL
+- зручно для code review та QA
+
+7. Інтеграція з GitHub
+
+- автоматичні деплої з `main` / `develop`
+- статуси білду в PR
+- швидкий rollback
+
+8. Зручна робота зі змінними середовища
+
+- UI для env variables
+- різні env для preview / production
+- безпечне зберігання секретів
+
+#### Коли Vercel — найкращий вибір
+
+- сучасні Next.js проєкти
+- SEO-критичні застосунки
+- стартапи та продакшен MVP
+- проєкти з активним ISR та Server Actions
+
+**Коротко:**
+
+- Vercel — офіційна платформа для Next.js
+- Повна підтримка App Router і Server Components
+- Zero-config деплой і глобальна CDN
+- Найкраща сумісність і продуктивність “з коробки”
+
+</details>
+
+<details>
+<summary>37. Як налаштувати власні доменні імена при деплої Next.js-застосунку?</summary>
+
+#### Next.js
+
+У **Next.js** налаштування власного домену **не залежить від коду**, а
+виконується **на рівні хостинг-платформи**.  
+Найпростіший і рекомендований варіант — **деплой на Vercel**, де підтримка
+кастомних доменів реалізована _out of the box_.
+
+1. Додавання домену у Vercel
+
+1. Зайти в **Vercel Dashboard**
+1. Обрати потрібний проєкт
+1. Перейти в **Settings → Domains**
+1. Додати домен (наприклад `example.com`)
+
+Vercel автоматично:
+
+- перевірить конфігурацію
+- підкаже потрібні DNS-записи
+
+2. Налаштування DNS у доменного провайдера
+
+Залежно від типу домену, Vercel запропонує:
+
+**Варіант A** — apex-домен (`example.com`)
+
+```txt
+Type: A
+Name: @
+Value: 76.76.21.21
+```
+
+**Варіант B** — піддомен (www.example.com)
+
+```txt
+Type: CNAME
+Name: www
+Value: cname.vercel-dns.com
+```
+
+DNS-записи додаються у панелі керування доменом, не у Next.js.
+
+3. HTTPS і SSL
+
+- Vercel автоматично видає SSL-сертифікат
+- HTTPS вмикається без ручних налаштувань
+- Сертифікати автоматично оновлюються
+
+Не потрібно налаштовувати Let’s Encrypt вручну.
+
+4. Redirect між www / non-www
+
+Рекомендовано мати єдиний канонічний домен.
+
+**Через Vercel Domains (рекомендовано)**
+
+увімкнути redirect у налаштуваннях домену
+
+**Або через Next.js Middleware**
+
+```TypeScript
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(req: NextRequest) {
+  const url = req.nextUrl;
+
+  if (url.hostname === 'www.example.com') {
+    url.hostname = 'example.com';
+    return NextResponse.redirect(url);
+  }
+}
+```
+
+5. Кілька доменів / середовищ
+
+Vercel підтримує:
+
+- `example.com` — production
+- `preview.example.com` — preview
+- auto-generated домени для PR
+
+Це не потребує змін у коді Next.js.
+
+6. Важливі моменти для Next.js 16+
+
+- App Router не потребує додаткової конфігурації
+- routing працює однаково для всіх доменів
+- ISR, Server Actions і Middleware працюють без змін
+
+#### Best practices
+
+- Використовувати HTTPS завжди
+- Налаштувати canonical-домен (www або non-www)
+- Не хардкодити домен у коді
+- Для env-залежних URL використовувати env variables
+
+**Коротко:**
+
+- Кастомні домени налаштовуються на рівні хостингу
+- На Vercel це робиться через Settings → Domains
+- SSL і HTTPS вмикаються автоматично
+- Next.js не потребує змін у коді для доменів
+
+</details>
+
+<details>
+<summary>38. Поясни, як деплоїти Next.js-застосунок з SSR на Netlify.</summary>
+
+#### Next.js
+
+Деплой **Next.js з SSR на Netlify можливий**, але **не є нативним**, як на
+Vercel.  
+Netlify підтримує Next.js через **Netlify Next.js Runtime**, який транслює
+можливості Next.js у **Netlify Functions та Edge Functions**.
+
+1. Базові вимоги
+
+Для SSR на Netlify потрібно:
+
+- Next.js **13+ / 16+**
+- App Router
+- Node runtime (не static export)
+- Пакет **`@netlify/plugin-nextjs`**
+
+`output: 'export'` **НЕ використовується**, бо він вимикає SSR.
+
+2. Підготовка Next.js-проєкту
+
+`next.config.js`
+
+```js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+};
+
+module.exports = nextConfig;
+```
+
+**Не використовувати:**
+
+```JavaScript
+output: 'export'
+```
+
+3. Налаштування Netlify
+
+netlify.toml
+
+```toml
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+```
+
+**плагін автоматично:**
+
+- налаштовує SSR
+- підключає Netlify Functions
+- обробляє routing
+
+4. Як працює SSR на Netlify
+
+- SSR-сторінки → Netlify Serverless Functions
+- Middleware → Netlify Edge Functions
+- Статичні сторінки → CDN
+- ISR → обмежена підтримка
+
+```txt
+Request
+→ CDN
+→ Netlify Function (SSR)
+→ HTML
+```
+
+5. Data fetching та SSR
+
+SSR працює коректно з:
+
+```TypeScript
+await fetch(url, { cache: 'no-store' });
+```
+
+**Також автоматично SSR:**
+
+- при використанні cookies / headers
+- при `dynamic = 'force-dynamic'`
+
+6. Обмеження Netlify (ВАЖЛИВО)
+
+❗ Порівняно з Vercel
+
+| Можливість      | Vercel     | Netlify            |
+| --------------- | ---------- | ------------------ |
+| SSR             | ✅ нативно | ⚠️ через functions |
+| App Router      | ✅         | ⚠️ частково        |
+| Server Actions  | ❌ / ⚠️    | ❌                 |
+| ISR             | ✅         | ⚠️ обмежено        |
+| Edge Middleware | ✅         | ⚠️                 |
+
+Server Actions у Netlify не підтримуються повноцінно.
+
+7. Коли Netlify — нормальний вибір
+
+- проєкт переважно статичний
+- мінімальний SSR
+- без Server Actions
+- вже існує Netlify-інфраструктура
+
+#### Best practices
+
+- Використовувати SSR лише там, де потрібно
+- Основний контент — SSG / ISR
+- Уникати Server Actions
+- Тестувати SSR-флоу окремо
+
+**Коротко:**
+
+- SSR у Next.js 16+ на Netlify можливий через `@netlify/plugin-nextjs`
+- SSR реалізується через Netlify Functions
+- Підтримка App Router — часткова
+- Є обмеження щодо ISR та Server Actions
+- Vercel залишається більш нативним варіантом для Next.js
+
+</details>
+
+<details>
+<summary>39. Яка структура папок рекомендується для великих Next.js-застосунків?</summary>
+
+#### Next.js
+
+У **Next.js** рекомендована структура папок базується на **App Router**,
+**розділенні відповідальностей** та **feature-oriented підході**.  
+Мета — зробити код **масштабованим**, **читабельним** і **зручним для команд з
+кількох розробників**.
+
+1. Базова структура для великого проєкту
+
+```txt
+app/
+ ├─ (public)/              # публічні маршрути
+ │   ├─ page.tsx
+ │   └─ layout.tsx
+ ├─ (auth)/                # route group (не впливає на URL)
+ │   ├─ login/
+ │   └─ register/
+ ├─ dashboard/             # feature / domain
+ │   ├─ page.tsx
+ │   ├─ layout.tsx
+ │   └─ loading.tsx
+ ├─ api/                   # Route Handlers
+ │   └─ users/
+ │       └─ route.ts
+ ├─ layout.tsx             # root layout
+ └─ globals.css
+```
+
+- `app/` — єдине джерело маршрутів
+- route groups `(( ))` — для логічного групування
+- кожен feature має власний layout і стани
+
+2. Feature-oriented структура (рекомендовано)
+
+Для великих застосунків краще групувати код за фічами, а не за типами файлів.
+
+```txt
+features/
+ ├─ auth/
+ │   ├─ components/
+ │   ├─ actions.ts
+ │   ├─ services.ts
+ │   └─ types.ts
+ ├─ dashboard/
+ │   ├─ components/
+ │   ├─ queries.ts
+ │   └─ utils.ts
+```
+
+**Це:**
+
+- спрощує навігацію в коді
+- зменшує coupling
+- полегшує рефакторинг
+
+3. Загальні папки (shared / core)
+
+```txt
+components/        # спільні UI-компоненти
+lib/               # server-side helpers (db, auth, fetch)
+hooks/             # client hooks
+styles/            # CSS-модулі / tokens
+types/             # глобальні TypeScript типи
+```
+
+**Важливо:**
+
+- `lib/` — тільки серверний код
+- `hooks/` — тільки client-side
+- `components/` — без бізнес-логіки
+
+4. Розділення server / client логіки
+
+Рекомендовано явно відокремлювати:
+
+```txt
+lib/
+ ├─ db.ts          # server-only
+ ├─ auth.ts        # server-only
+components/
+ ├─ Button.tsx     # server або client
+ └─ Modal.client.tsx
+```
+
+**Або через директорії:**
+
+```txt
+server/
+client/
+```
+
+5. Що не рекомендується
+
+- одна велика папка components для всього
+- змішувати server і client код без структури
+- глибока вкладеність без сенсу
+- дублювання логіки між фічами
+
+6. Best practices для великих команд
+
+- Використовувати route groups
+- Тримати мінімум Client Components
+- Feature-based структура
+- Єдині правила неймінгу
+- Документувати архітектуру в README
+
+**Коротко:**
+
+- Основа — app/ з App Router
+- Feature-oriented структура — найкращий вибір
+- Route groups допомагають логічно організувати маршрути
+- Чітке розділення server / client коду — must-have
+
+</details>
+
+<details>
+<summary>40. Як організувати компоненти для кращої масштабованості?</summary>
+
+#### Next.js
+
+У **Next.js** масштабованість компонентів досягається завдяки **Server
+Components за замовчуванням**, **feature-oriented підходу** та **чіткому
+розділенню відповідальностей**.  
+Ключова ідея — **менше Client Components, більше композиції**.
+
+1. Використовувати Server Components як стандарт
+
+У App Router всі компоненти є серверними, якщо явно не вказано `'use client'`.
+
+```tsx
+export default async function Page() {
+  const data = await getData();
+  return <List items={data} />;
+}
+```
+
+Переваги:
+
+не потрапляють у клієнтський бандл
+
+безпечний доступ до БД/секретів
+
+краща продуктивність
+
+2. Виносити інтерактивність у малі Client Components
+
+Погано (великий клієнтський компонент):
+
+```tsx
+'use client';
+export default function Page() {
+  /* багато логіки */
+}
+```
+
+Добре (точкова інтерактивність):
+
+```tsx
+export default function Page() {
+  return (
+    <>
+      <StaticSection />
+      <InteractiveToggle />
+    </>
+  );
+}
+```
+
+```tsx
+// InteractiveToggle.tsx
+'use client';
+export function InteractiveToggle() {
+  /* мінімум логіки */
+}
+```
+
+3. Feature-oriented структура (рекомендовано)
+
+Групувати компоненти за фічами, а не за типами.
+
+```txt
+features/
+ ├─ auth/
+ │   ├─ components/
+ │   ├─ actions.ts
+ │   └─ services.ts
+ ├─ dashboard/
+ │   ├─ components/
+ │   └─ queries.ts
+```
+
+Це зменшує coupling і спрощує розвиток.
+
+4. Розділяти “presentational” та “container” компоненти
+
+**Presentational** — UI без бізнес-логіки **Container** — data fetching та
+orchestration (частіше серверні)
+
+```tsx
+// Container (Server Component)
+export default async function UsersSection() {
+  const users = await getUsers();
+  return <UsersList users={users} />;
+}
+// Presentational
+export function UsersList({ users }) {
+  return users.map(u => <div key={u.id}>{u.name}</div>);
+}
+```
+
+5. Уникати “god components”
+
+- Один компонент робить все
+- Композиція з дрібних компонентів
+
+```tsx
+<Page>
+  <Header />
+  <Filters />
+  <Table />
+  <Pagination />
+</Page>
+```
+
+6. Чітко розділяти server / client код
+
+**Рекомендації:**
+
+- серверна логіка → `lib/`, `actions.ts`, `services.ts`
+- клієнтська логіка → `hooks/`, `.client.tsx`
+- не імпортувати server-код у Client Components
+
+7. Стандартизувати неймінг і правила
+
+- `*.client.tsx` — клієнтські компоненти
+- `*.server.ts` — серверні утиліти
+- Єдині правила імпортів та структури
+- Документувати патерни в README
+
+**Коротко:**
+
+- Server Components — база для масштабованості
+- Client Components — лише для інтерактивності
+- Feature-oriented структура спрощує розвиток
+- Композиція > великі монолітні компоненти
+
+</details>
