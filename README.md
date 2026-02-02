@@ -3500,3 +3500,127 @@ Vercel підтримує:
 - Next.js не потребує змін у коді для доменів
 
 </details>
+
+<details>
+<summary>38. Поясни, як деплоїти Next.js-застосунок з SSR на Netlify.</summary>
+
+#### Next.js
+
+Деплой **Next.js з SSR на Netlify можливий**, але **не є нативним**, як на
+Vercel.  
+Netlify підтримує Next.js через **Netlify Next.js Runtime**, який транслює
+можливості Next.js у **Netlify Functions та Edge Functions**.
+
+1. Базові вимоги
+
+Для SSR на Netlify потрібно:
+
+- Next.js **13+ / 16+**
+- App Router
+- Node runtime (не static export)
+- Пакет **`@netlify/plugin-nextjs`**
+
+`output: 'export'` **НЕ використовується**, бо він вимикає SSR.
+
+2. Підготовка Next.js-проєкту
+
+`next.config.js`
+
+```js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+};
+
+module.exports = nextConfig;
+```
+
+**Не використовувати:**
+
+```JavaScript
+output: 'export'
+```
+
+3. Налаштування Netlify
+
+netlify.toml
+
+```toml
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+```
+
+**плагін автоматично:**
+
+- налаштовує SSR
+- підключає Netlify Functions
+- обробляє routing
+
+4. Як працює SSR на Netlify
+
+- SSR-сторінки → Netlify Serverless Functions
+- Middleware → Netlify Edge Functions
+- Статичні сторінки → CDN
+- ISR → обмежена підтримка
+
+```txt
+Request
+→ CDN
+→ Netlify Function (SSR)
+→ HTML
+```
+
+5. Data fetching та SSR
+
+SSR працює коректно з:
+
+```TypeScript
+await fetch(url, { cache: 'no-store' });
+```
+
+**Також автоматично SSR:**
+
+- при використанні cookies / headers
+- при `dynamic = 'force-dynamic'`
+
+6. Обмеження Netlify (ВАЖЛИВО)
+
+❗ Порівняно з Vercel
+
+| Можливість      | Vercel     | Netlify            |
+| --------------- | ---------- | ------------------ |
+| SSR             | ✅ нативно | ⚠️ через functions |
+| App Router      | ✅         | ⚠️ частково        |
+| Server Actions  | ❌ / ⚠️    | ❌                 |
+| ISR             | ✅         | ⚠️ обмежено        |
+| Edge Middleware | ✅         | ⚠️                 |
+
+Server Actions у Netlify не підтримуються повноцінно.
+
+7. Коли Netlify — нормальний вибір
+
+- проєкт переважно статичний
+- мінімальний SSR
+- без Server Actions
+- вже існує Netlify-інфраструктура
+
+#### Best practices
+
+- Використовувати SSR лише там, де потрібно
+- Основний контент — SSG / ISR
+- Уникати Server Actions
+- Тестувати SSR-флоу окремо
+
+**Коротко:**
+
+- SSR у Next.js 16+ на Netlify можливий через `@netlify/plugin-nextjs`
+- SSR реалізується через Netlify Functions
+- Підтримка App Router — часткова
+- Є обмеження щодо ISR та Server Actions
+- Vercel залишається більш нативним варіантом для Next.js
+
+</details>
