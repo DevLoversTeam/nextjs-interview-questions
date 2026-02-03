@@ -4119,3 +4119,125 @@ export function middleware(req: NextRequest) {
 - Використання cookies робить сторінку динамічною (SSR)
 
 </details>
+
+<details>
+<summary>43. Як Next.js працює з headers?</summary>
+
+#### Next.js
+
+У **Next.js** робота з HTTP headers є **серверною відповідальністю** і
+інтегрована в **App Router**.  
+Headers доступні у **Server Components**, **Route Handlers**, **Server Actions**
+та **Middleware**, але **не доступні напряму в Client Components**.
+
+1. Читання headers у Server Components
+
+Для читання headers використовується хелпер **`headers()`** з `next/headers`.
+
+```tsx
+import { headers } from 'next/headers';
+
+export default function Page() {
+  const headersList = headers();
+  const userAgent = headersList.get('user-agent');
+
+  return <div>User-Agent: {userAgent}</div>;
+}
+```
+
+- працює тільки на сервері
+- робить сторінку динамічною (SSR)
+
+2. Headers у Route Handlers (API-роутах)
+
+У Route Handlers headers читаються та встановлюються через стандартний Web Fetch
+API.
+
+```TypeScript
+export async function GET(request: Request) {
+  const auth = request.headers.get('authorization');
+
+  return new Response(JSON.stringify({ auth }), {
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Custom-Header': 'example',
+    },
+  });
+}
+```
+
+3. Headers у Server Actions
+
+Server Actions можуть читати headers, але зазвичай не використовуються для їх
+зміни напряму — для цього краще підходять Route Handlers або Middleware.
+
+```TypeScript
+'use server';
+
+import { headers } from 'next/headers';
+
+export async function action() {
+  const locale = headers().get('accept-language');
+  return locale;
+}
+```
+
+4. Headers у Middleware
+
+Middleware виконується до рендерингу і ідеально підходить для роботи з headers:
+
+```TypeScript
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(req: NextRequest) {
+  const res = NextResponse.next();
+
+  res.headers.set('x-app-version', '1.0.0');
+  return res;
+}
+```
+
+Типові кейси:
+
+- auth / access control
+- redirects
+- A/B testing
+- geo-based логіка
+- security headers
+
+5. Вплив headers на рендеринг і кеш
+
+Використання headers:
+
+- вимикає static rendering
+- сторінка стає **SSR**
+- сторінка не кешується за замовчуванням
+
+Це очікувана поведінка, оскільки headers залежать від запиту.
+
+6. Headers і Client Components
+
+**Client Components не мають прямого доступу до headers.**
+
+Допустимі варіанти:
+
+- передати значення з сервера через props
+- отримати дані через API
+
+#### Best practices
+
+- Працювати з headers **тільки на сервері**
+- Використовувати Middleware для pre-request логіки
+- Не читати headers без потреби (впливає на SSR)
+- Для безпеки налаштовувати headers централізовано
+- Не хардкодити логіку на основі `user-agent` без необхідності
+
+**Коротко:**
+
+- Headers у Next.js доступні лише на сервері
+- Читання: Server Components, Route Handlers, Middleware
+- Зміна: Route Handlers, Middleware
+- Використання headers робить сторінку динамічною (SSR)
+
+</details>
