@@ -3984,3 +3984,138 @@ if (!isValid(id)) {
 - Валідація, auth і мінімізація Client Components — ключові принципи
 
 </details>
+
+<details>
+<summary>42. Як Next.js працює з cookies?</summary>
+
+#### Next.js
+
+У **Next.js 16+** робота з cookies відбувається **виключно на сервері** через
+вбудовані API App Router.  
+Cookies вважаються **частиною серверного контексту**, тому вони тісно
+інтегровані з **Server Components**, **Route Handlers**, **Server Actions** та
+**Middleware**.
+
+1. Основний API для роботи з cookies
+
+Next.js надає хелпер **`cookies()`** з модуля `next/headers`.
+
+```TypeScript
+import { cookies } from 'next/headers';
+```
+
+Це стандартний і рекомендований спосіб роботи з cookies у Next.js 16+.
+
+2. Читання cookies (Server Components)
+
+```tsx
+import { cookies } from 'next/headers';
+
+export default function Page() {
+  const cookieStore = cookies();
+  const theme = cookieStore.get('theme');
+
+  return <div>Theme: {theme?.value}</div>;
+}
+```
+
+- працює лише на сервері
+- автоматично робить сторінку динамічною (SSR)
+
+3. Запис і видалення cookies (Server Actions / Route Handlers)
+
+**Запис cookies**
+
+```TypeScript
+'use server';
+
+import { cookies } from 'next/headers';
+
+export async function setTheme() {
+  cookies().set('theme', 'dark', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+  });
+}
+```
+
+**Видалення cookies**
+
+```TypeScript
+cookies().delete('theme');
+```
+
+**У Server Components cookies можна лише читати**, але не змінювати.
+
+4. Cookies в API-роутах (Route Handlers)
+
+```TypeScript
+import { cookies } from 'next/headers';
+
+export async function GET() {
+  const token = cookies().get('token');
+
+  return Response.json({ token: token?.value });
+}
+```
+
+5. Cookies у Middleware
+
+Middleware часто використовується для:
+
+- auth-gate
+- редиректів
+- перевірки сесій
+
+```TypeScript
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(req: NextRequest) {
+  const token = req.cookies.get('token');
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+}
+```
+
+6. Cookies і Client Components
+
+**Client Components не мають прямого доступу до cookies.**
+
+- немає `document.cookie`
+- немає `cookies()`
+
+Єдиний варіант:
+
+- передати значення з сервера через props
+- або отримати дані через API
+
+7. Вплив cookies на рендеринг
+
+Використання cookies:
+
+- автоматично вимикає static rendering
+- сторінка стає SSR
+- кешування за замовчуванням не застосовується
+
+Це очікувана і коректна поведінка.
+
+#### Best practices
+
+- Працювати з cookies тільки на сервері
+- Для auth використовувати `httpOnly` cookies
+- Не зберігати чутливі дані у client-accessible cookies
+- Не читати cookies в Client Components
+- Використовувати Server Actions для мутацій
+
+**Коротко:**
+
+- Cookies у Next.js — серверна відповідальність
+- Читання: Server Components, Route Handlers, Middleware
+- Запис: Server Actions або API-роути
+- Використання cookies робить сторінку динамічною (SSR)
+
+</details>
