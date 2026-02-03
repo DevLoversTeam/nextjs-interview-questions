@@ -3875,3 +3875,112 @@ export function UsersList({ users }) {
 - Композиція > великі монолітні компоненти
 
 </details>
+
+<details>
+<summary>41. Які best practices з безпеки варто враховувати в Next.js-застосунку?</summary>
+
+#### Next.js
+
+У **Next.js** безпека значною мірою базується на **Server Components**,
+**ізоляції клієнтського коду** та **контролі доступу на сервері**.  
+Фреймворк дає сильну основу, але відповідальність за коректне використання — на
+розробнику.
+
+1. Розділяти server та client код
+
+- Server Components **не потрапляють у клієнтський бандл**
+- Секрети та бізнес-логіка мають залишатися **на сервері**
+
+```TypeScript
+// ❌ не використовувати в Client Components
+process.env.SECRET_KEY;
+// ✅ тільки Server Components / Route Handlers
+const secret = process.env.SECRET_KEY;
+```
+
+2. Правильно використовувати змінні середовища
+
+- не зберігати секрети з `NEXT_PUBLIC_`
+- використовувати `NEXT_PUBLIC_` лише для публічних значень
+- зберігати секрети тільки на сервері
+
+3. Захищати API-роути та Server Actions
+
+- перевіряти автентифікацію
+- перевіряти ролі та права доступу
+- не довіряти даним з клієнта
+
+```TypeScript
+if (!user || user.role !== 'admin') {
+  return new Response('Forbidden', { status: 403 });
+}
+```
+
+4. Використовувати Middleware для pre-request перевірок
+
+Middleware підходить для:
+
+- auth-gate
+- редиректів
+- захисту приватних маршрутів
+
+```TypeScript
+export function middleware(req: NextRequest) {
+  if (!isAuthenticated(req)) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+}
+```
+
+5. Захист від XSS
+
+- не використовувати dangerouslySetInnerHTML без санітизації
+- довіряти React-escaping за замовчуванням
+- санітизувати HTML з CMS
+
+6. Захист від CSRF
+
+- використовувати same-site cookies
+- перевіряти origin / headers
+- для форм — Server Actions замість client fetch
+
+7. Валідація вхідних даних
+
+- не довіряти params, searchParams, body
+- валідовувати всі дані
+- повертати коректні HTTP-статуси
+
+```TypeScript
+if (!isValid(id)) {
+  notFound();
+  }
+```
+
+8. Обмежувати доступ до cookies та headers
+
+- використовувати httpOnly, secure, sameSite
+- не читати cookies у Client Components
+- працювати з cookies тільки на сервері
+
+9. Мінімізувати attack surface
+
+- мінімум API-ендпоінтів
+- мінімум Client Components
+- мінімум зовнішніх бібліотек
+- видаляти невикористаний код
+
+10. Покладатися на платформу (Vercel / Netlify)
+
+- HTTPS за замовчуванням
+- захист від DDoS
+- ізоляція serverless-функцій
+- автоматичні security updates
+
+**Коротко:**
+
+- Server Components — основа безпеки в Next.js 16+
+- Секрети ніколи не потрапляють у клієнт
+- API та Server Actions мають бути захищені
+- Валідація, auth і мінімізація Client Components — ключові принципи
+
+</details>
