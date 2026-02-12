@@ -4463,3 +4463,146 @@ Next.js:
 - Це ключовий файл для стабільності та масштабованості проєкту
 
 </details>
+
+<details>
+<summary>47. Як визначати типи для сторінок у Next.js?</summary>
+
+#### Next.js
+
+У **Next.js (App Router)** сторінки є **Server Components за замовчуванням**,
+тому їх типізація базується на:
+
+- типах props сторінки
+- типах `params` для динамічних маршрутів
+- типах `searchParams` для query-параметрів
+
+Next.js не використовує спеціальний тип на кшталт `NextPage` (він був у Pages
+Router).
+
+1. Базова типізація сторінки
+
+Сторінка — це звичайна функція з типізованими props.
+
+```tsx
+export default function Page() {
+  return <div>Hello</div>;
+}
+```
+
+Спеціальні типи не потрібні.
+
+2. Типізація динамічних параметрів (`params`)
+
+Для маршруту:
+
+```bash
+app/posts/[id]/page.tsx
+```
+
+```tsx
+type PageProps = {
+  params: {
+    id: string;
+  };
+};
+
+export default function Page({ params }: PageProps) {
+  return <div>Post: {params.id}</div>;
+}
+```
+
+#### Кілька параметрів
+
+```bash
+app/users/[userId]/posts/[postId]/page.tsx
+```
+
+```tsx
+type PageProps = {
+  params: {
+    userId: string;
+    postId: string;
+  };
+};
+```
+
+3. Типізація `searchParams`
+
+```tsx
+type PageProps = {
+  searchParams: {
+    page?: string;
+    sort?: string;
+  };
+};
+
+export default function Page({ searchParams }: PageProps) {
+  const page = Number(searchParams.page ?? 1);
+  return <div>Page: {page}</div>;
+}
+```
+
+4. Комбінована типізація
+
+```tsx
+type PageProps = {
+  params: { id: string };
+  searchParams: { tab?: string };
+};
+
+export default function Page({ params, searchParams }: PageProps) {
+  return (
+    <div>
+      {params.id} - {searchParams.tab}
+    </div>
+  );
+}
+```
+
+5. Типізація для async Server Pages
+
+Сторінки можуть бути async:
+
+```tsx
+type PageProps = {
+  params: { id: string };
+};
+
+export default async function Page({ params }: PageProps) {
+  const data = await getPost(params.id);
+  return <div>{data.title}</div>;
+}
+```
+
+6. Типізація `generateStaticParams`
+
+```TypeScript
+export async function generateStaticParams(): Promise<
+  { id: string }[]
+> {
+  return [{ id: '1' }, { id: '2' }];
+}
+```
+
+7. Чого не використовують у Next.js 16+
+
+- `NextPage`
+- `GetServerSideProps`
+- `GetStaticProps`
+- Pages Router типи
+
+#### Best practices
+
+- Описувати окремий тип `PageProps`
+- Завжди типізувати `params` для динамічних маршрутів
+- Використовувати optional-поля для `searchParams`
+- Не використовувати legacy типи з Pages Router
+
+**Коротко:**
+
+- Сторінки в App Router — звичайні функції
+- Типізуються через `params` і `searchParams`
+- NextPage та інші Pages Router типи не використовуються
+- Типізація виконується вручну через PageProps
+
+</details>
