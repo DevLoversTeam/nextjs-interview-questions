@@ -4739,3 +4739,154 @@ npm run build
 - Рекомендовано використовувати `strict` режим
 
 </details>
+
+<details>
+<summary>49. Як TypeScript використовується в API-роутах Next.js?</summary>
+
+#### Next.js
+
+У **Next.js** API-роути реалізуються через **Route Handlers**
+(`app/api/**/route.ts`) і працюють на базі **Web Fetch API**.  
+TypeScript використовується для типізації:
+
+- тіла запиту
+- відповіді
+- параметрів маршруту (`params`)
+- query-параметрів
+
+1. Базовий API-роут з TypeScript
+
+```TypeScript
+// app/api/posts/route.ts
+export async function GET(): Promise<Response> {
+  return Response.json({ posts: [] });
+}
+```
+
+Next.js автоматично визначає типи, але явне повернення `Promise<Response>` —
+good practice.
+
+2. Типізація тіла запиту (POST)
+
+```TypeScript
+type CreatePostBody = {
+  title: string;
+  content: string;
+};
+
+export async function POST(request: Request) {
+  const body: CreatePostBody = await request.json();
+
+  return Response.json({
+    success: true,
+    title: body.title,
+  });
+}
+```
+
+Важливо: request.json() повертає any, тому тип потрібно вказувати вручну.
+
+3. Типізація параметрів маршруту (params)
+
+Для маршруту:
+
+```bash
+app/api/posts/[id]/route.ts
+```
+
+```TypeScript
+type RouteParams = {
+  params: {
+    id: string;
+  };
+};
+
+export async function GET(
+  request: Request,
+  { params }: RouteParams
+) {
+  return Response.json({ id: params.id });
+}
+```
+
+4. Типізація query parameters
+
+```TypeScript
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const page = Number(searchParams.get('page') ?? 1);
+
+  return Response.json({ page });
+}
+```
+
+Для складних кейсів можна створити тип:
+
+```TypeScript
+type Query = {
+  page?: string;
+  limit?: string;
+};
+```
+
+5. Типізація відповіді
+
+```TypeScript
+type PostResponse = {
+  id: string;
+  title: string;
+};
+
+export async function GET(): Promise<Response> {
+  const data: PostResponse = {
+    id: '1',
+    title: 'Hello',
+  };
+
+  return Response.json(data);
+}
+```
+
+6. Використання утиліт для типів
+
+Рекомендовано виносити типи:
+
+```txt
+types/
+ └─ api.ts
+```
+
+```TypeScript
+export type CreateUserBody = {
+  email: string;
+  password: string;
+};
+```
+
+7. Що не використовується в Next.js 16+
+
+- `NextApiRequest`
+- `NextApiResponse`
+- `pages/api`
+- Express-подібні типи
+
+App Router використовує стандартні:
+
+- `Request`
+- `Response`
+
+#### Best practices
+
+- Завжди типізувати `request.json()`
+- Виносити типи у `types/`
+- Типізувати `params` для динамічних маршрутів
+- Не використовувати legacy типи з Pages Router
+
+**Коротко:**
+
+- API-роути в App Router використовують стандартні `Request` і `Response`
+- TypeScript типізує body, params і відповіді
+- Legacy типи Pages Router не використовуються
+- Типи краще виносити в окремі файли
+
+</details>
