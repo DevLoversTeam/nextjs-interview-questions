@@ -4890,3 +4890,172 @@ App Router використовує стандартні:
 - Типи краще виносити в окремі файли
 
 </details>
+
+<details>
+<summary>50. Як забезпечити type safety у Next.js-проєкті?</summary>
+
+#### Next.js
+
+У **Next.js** type safety досягається через поєднання:
+
+- суворої конфігурації TypeScript
+- типізації серверної та клієнтської логіки
+- єдиних типів для API і даних
+- перевірки типів під час build
+
+Мета — **type-safe потік даних від БД → сервер → UI**.
+
+1. Увімкнути strict-режим
+
+У `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true
+  }
+}
+```
+
+Це основа type safety.
+
+2. Типізувати сторінки та маршрути
+
+```tsx
+type PageProps = {
+  params: { id: string };
+  searchParams: { page?: string };
+};
+
+export default function Page({ params }: PageProps) {
+  return <div>{params.id}</div>;
+}
+```
+
+3. Типізувати data fetching
+
+```tsx
+type Post = {
+  id: string;
+  title: string;
+};
+
+async function getPost(id: string): Promise<Post> {
+  const res = await fetch(`/api/posts/${id}`);
+  return res.json();
+}
+```
+
+Ніколи не залишати `any`.
+
+4. Спільні типи для клієнта і сервера
+
+```txt
+types/
+ └─ post.ts
+```
+
+```TypeScript
+export type Post = {
+  id: string;
+  title: string;
+};
+```
+
+Використовувати:
+
+- у Route Handlers
+- у Server Components
+- у Client Components
+
+5. Типізація API-роутів
+
+```TypeScript
+type CreatePostBody = {
+  title: string;
+};
+
+export async function POST(request: Request) {
+  const body: CreatePostBody = await request.json();
+  return Response.json(body);
+}
+```
+
+6. Runtime-валидація (важливо)
+
+TypeScript перевіряє на етапі компіляції, але не в runtime. Для повної безпеки
+використовують схеми (наприклад, Zod).
+
+```tsx
+import { z } from 'zod';
+
+const schema = z.object({
+  title: z.string(),
+});
+
+const body = schema.parse(await request.json());
+```
+
+7. Типізація Server Actions
+
+```TypeScript
+'use server';
+
+type FormDataType = {
+  email: string;
+};
+
+export async function submit(data: FormDataType) {
+  // type-safe
+}
+```
+
+8. Уникати `any`
+
+Якщо потрібно тимчасово:
+
+```TypeScript
+unknown // краще ніж any
+```
+
+9. Типізувати env-змінні
+
+Створити:
+
+```TypeScript
+env.d.ts
+declare namespace NodeJS {
+  interface ProcessEnv {
+    DATABASE_URL: string;
+  }
+}
+```
+
+10. Перевірка під час build
+
+Next.js запускає type-check під час:
+
+```bush
+npm run build
+```
+
+Якщо є помилки — build падає.
+
+#### Архітектурні принципи type safety
+
+- Server Components як джерело істини
+- Спільні типи (`types/`)
+- Runtime-валидація для зовнішніх даних
+- Мінімум Client Components
+- Відсутність `any`
+
+**Коротко:**
+
+- Увімкнути `strict` режим
+- Використовувати спільні типи для server/client
+- Типізувати API, сторінки та data fetching
+- Додати runtime-валидацію для зовнішніх даних
+- Не використовувати `any`
+
+</details>
