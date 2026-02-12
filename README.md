@@ -4350,3 +4350,116 @@ State-бібліотеки працюють **лише у Client Components**:
 - Підключати їх варто лише при реальній необхідності
 
 </details>
+
+<details>
+<summary>46. Яка роль tsconfig.json у Next.js-проєкті?</summary>
+
+#### Next.js
+
+Файл **`tsconfig.json`** визначає, як **TypeScript компілює та перевіряє код** у
+Next.js-проєкті.  
+У Next.js 16+ цей файл також впливає на:
+
+- типізацію
+- alias-імпорти
+- перевірку помилок під час build
+- роботу редактора (VS Code)
+
+Next.js автоматично створює базову конфігурацію при першому запуску TypeScript.
+
+1. Типова конфігурація Next.js
+
+```json
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "strict": true,
+    "noEmit": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}
+```
+
+2. Основні ролі `tsconfig.json`
+
+**Type checking**
+
+- перевірка типів під час розробки та build
+- `strict: true` — рекомендується для production
+
+Alias-імпорти
+
+```json
+{
+  "baseUrl": ".",
+  "paths": {
+    "@/*": ["./*"]
+  }
+}
+```
+
+Використання:
+
+```TypeScript
+import Button from '@/components/Button';
+```
+
+Переваги:
+
+- короткі імпорти
+- менше `../../../`
+- зручність у великих проєктах
+
+**Контроль компіляції**
+
+- `noEmit: true` — Next.js сам керує збіркою
+- TypeScript використовується тільки для перевірки типів
+
+3. Взаємодія з Next.js
+
+Next.js:
+
+- автоматично читає `tsconfig.json`
+- оптимізує збірку через SWC
+- показує TypeScript-помилки під час next build
+- створює `next-env.d.ts`
+
+Якщо є TypeScript-помилки — build може впасти.
+
+4. Важливі опції для Next.js 16+
+
+| Опція                       | Навіщо                       |
+| --------------------------- | ---------------------------- |
+| `strict`                    | безпечний код                |
+| `moduleResolution: bundler` | коректна робота з App Router |
+| `jsx: preserve`             | JSX обробляє Next.js         |
+| `incremental`               | швидший type-check           |
+| `paths`                     | alias-імпорти                |
+
+5. Що не потрібно робити
+
+- змінювати `module` на `commonjs`
+- вимикати `strict` у production
+- використовувати `emit` — Next.js керує збіркою сам
+
+**Коротко:**
+
+- `tsconfig.json` керує TypeScript-перевіркою та налаштуваннями компіляції
+- Використовується для alias-імпортів і strict-режиму
+- Next.js читає його під час build
+- Це ключовий файл для стабільності та масштабованості проєкту
+
+</details>
