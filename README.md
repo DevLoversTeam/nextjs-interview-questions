@@ -4606,3 +4606,136 @@ export async function generateStaticParams(): Promise<
 - Типізація виконується вручну через PageProps
 
 </details>
+
+<details>
+<summary>48. Як мігрувати Next.js-проєкт на TypeScript?</summary>
+
+#### Next.js
+
+У **Next.js 16+** перехід на TypeScript максимально спрощений — фреймворк
+автоматично налаштовує більшість конфігурації.  
+Міграція може виконуватись **поступово**, без повного переписування проєкту.
+
+1. Встановлення TypeScript
+
+Встановіть необхідні пакети:
+
+```bash
+npm install --save-dev typescript @types/react @types/node
+```
+
+2. Створення першого TypeScript-файлу
+
+Створіть або перейменуйте будь-який файл:
+
+```css
+page.js → page.tsx
+```
+
+Після запуску:
+
+```bash
+npm run dev
+```
+
+Next.js автоматично:
+
+- створить `tsconfig.json`
+- створить `next-env.d.ts`
+- налаштує рекомендовані опції
+
+3. Поступова міграція (рекомендовано)
+
+Next.js підтримує змішаний код:
+
+```json
+"allowJs": true
+```
+
+Стратегія:
+
+1. Почати з нових файлів (`.ts / .tsx`)
+2. Поступово перейменовувати старі
+3. Типізувати ключові частини:
+
+- компоненти
+- API
+- утиліти
+- data fetching
+
+4. Типізація компонентів
+
+```tsx
+type Props = {
+  title: string;
+};
+
+export function Header({ title }: Props) {
+  return <h1>{title}</h1>;
+}
+```
+
+5. Типізація сторінок (App Router)
+
+```tsx
+type PageProps = {
+  params: { id: string };
+};
+
+export default function Page({ params }: PageProps) {
+  return <div>{params.id}</div>;
+}
+```
+
+6. Перевірка типів
+
+Next.js перевіряє типи під час build:
+
+```bash
+npm run build
+```
+
+Якщо є помилки TypeScript — збірка завершиться з помилкою.
+
+7. Важливі налаштування `tsconfig.json`
+
+Рекомендовано:
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "moduleResolution": "bundler",
+    "incremental": true
+  }
+}
+```
+
+8. Типова стратегія міграції для великих проєктів
+
+1. Увімкнути TypeScript
+1. Залишити `allowJs: true`
+1. Мігрувати:
+
+- `lib/`
+- `components/`
+- `features/`
+
+4. В кінці вимкнути allowJs
+
+#### Що не потрібно робити
+
+- переписувати весь проєкт одразу
+- вимикати `strict`
+- використовувати `any` без потреби
+- створювати власний tsconfig з нуля (Next.js генерує оптимальний)
+
+**Коротко:**
+
+- Встановити TypeScript і створити `.ts` або `.tsx`
+- Next.js автоматично створює конфігурацію
+- Міграцію можна виконувати поступово
+- Рекомендовано використовувати `strict` режим
+
+</details>
