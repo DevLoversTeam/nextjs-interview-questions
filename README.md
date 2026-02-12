@@ -3875,3 +3875,1187 @@ export function UsersList({ users }) {
 - Композиція > великі монолітні компоненти
 
 </details>
+
+<details>
+<summary>41. Які best practices з безпеки варто враховувати в Next.js-застосунку?</summary>
+
+#### Next.js
+
+У **Next.js** безпека значною мірою базується на **Server Components**,
+**ізоляції клієнтського коду** та **контролі доступу на сервері**.  
+Фреймворк дає сильну основу, але відповідальність за коректне використання — на
+розробнику.
+
+1. Розділяти server та client код
+
+- Server Components **не потрапляють у клієнтський бандл**
+- Секрети та бізнес-логіка мають залишатися **на сервері**
+
+```TypeScript
+// ❌ не використовувати в Client Components
+process.env.SECRET_KEY;
+// ✅ тільки Server Components / Route Handlers
+const secret = process.env.SECRET_KEY;
+```
+
+2. Правильно використовувати змінні середовища
+
+- не зберігати секрети з `NEXT_PUBLIC_`
+- використовувати `NEXT_PUBLIC_` лише для публічних значень
+- зберігати секрети тільки на сервері
+
+3. Захищати API-роути та Server Actions
+
+- перевіряти автентифікацію
+- перевіряти ролі та права доступу
+- не довіряти даним з клієнта
+
+```TypeScript
+if (!user || user.role !== 'admin') {
+  return new Response('Forbidden', { status: 403 });
+}
+```
+
+4. Використовувати Middleware для pre-request перевірок
+
+Middleware підходить для:
+
+- auth-gate
+- редиректів
+- захисту приватних маршрутів
+
+```TypeScript
+export function middleware(req: NextRequest) {
+  if (!isAuthenticated(req)) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+}
+```
+
+5. Захист від XSS
+
+- не використовувати dangerouslySetInnerHTML без санітизації
+- довіряти React-escaping за замовчуванням
+- санітизувати HTML з CMS
+
+6. Захист від CSRF
+
+- використовувати same-site cookies
+- перевіряти origin / headers
+- для форм — Server Actions замість client fetch
+
+7. Валідація вхідних даних
+
+- не довіряти params, searchParams, body
+- валідовувати всі дані
+- повертати коректні HTTP-статуси
+
+```TypeScript
+if (!isValid(id)) {
+  notFound();
+  }
+```
+
+8. Обмежувати доступ до cookies та headers
+
+- використовувати httpOnly, secure, sameSite
+- не читати cookies у Client Components
+- працювати з cookies тільки на сервері
+
+9. Мінімізувати attack surface
+
+- мінімум API-ендпоінтів
+- мінімум Client Components
+- мінімум зовнішніх бібліотек
+- видаляти невикористаний код
+
+10. Покладатися на платформу (Vercel / Netlify)
+
+- HTTPS за замовчуванням
+- захист від DDoS
+- ізоляція serverless-функцій
+- автоматичні security updates
+
+**Коротко:**
+
+- Server Components — основа безпеки в Next.js 16+
+- Секрети ніколи не потрапляють у клієнт
+- API та Server Actions мають бути захищені
+- Валідація, auth і мінімізація Client Components — ключові принципи
+
+</details>
+
+<details>
+<summary>42. Як Next.js працює з cookies?</summary>
+
+#### Next.js
+
+У **Next.js 16+** робота з cookies відбувається **виключно на сервері** через
+вбудовані API App Router.  
+Cookies вважаються **частиною серверного контексту**, тому вони тісно
+інтегровані з **Server Components**, **Route Handlers**, **Server Actions** та
+**Middleware**.
+
+1. Основний API для роботи з cookies
+
+Next.js надає хелпер **`cookies()`** з модуля `next/headers`.
+
+```TypeScript
+import { cookies } from 'next/headers';
+```
+
+Це стандартний і рекомендований спосіб роботи з cookies у Next.js 16+.
+
+2. Читання cookies (Server Components)
+
+```tsx
+import { cookies } from 'next/headers';
+
+export default function Page() {
+  const cookieStore = cookies();
+  const theme = cookieStore.get('theme');
+
+  return <div>Theme: {theme?.value}</div>;
+}
+```
+
+- працює лише на сервері
+- автоматично робить сторінку динамічною (SSR)
+
+3. Запис і видалення cookies (Server Actions / Route Handlers)
+
+**Запис cookies**
+
+```TypeScript
+'use server';
+
+import { cookies } from 'next/headers';
+
+export async function setTheme() {
+  cookies().set('theme', 'dark', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+  });
+}
+```
+
+**Видалення cookies**
+
+```TypeScript
+cookies().delete('theme');
+```
+
+**У Server Components cookies можна лише читати**, але не змінювати.
+
+4. Cookies в API-роутах (Route Handlers)
+
+```TypeScript
+import { cookies } from 'next/headers';
+
+export async function GET() {
+  const token = cookies().get('token');
+
+  return Response.json({ token: token?.value });
+}
+```
+
+5. Cookies у Middleware
+
+Middleware часто використовується для:
+
+- auth-gate
+- редиректів
+- перевірки сесій
+
+```TypeScript
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(req: NextRequest) {
+  const token = req.cookies.get('token');
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+}
+```
+
+6. Cookies і Client Components
+
+**Client Components не мають прямого доступу до cookies.**
+
+- немає `document.cookie`
+- немає `cookies()`
+
+Єдиний варіант:
+
+- передати значення з сервера через props
+- або отримати дані через API
+
+7. Вплив cookies на рендеринг
+
+Використання cookies:
+
+- автоматично вимикає static rendering
+- сторінка стає SSR
+- кешування за замовчуванням не застосовується
+
+Це очікувана і коректна поведінка.
+
+#### Best practices
+
+- Працювати з cookies тільки на сервері
+- Для auth використовувати `httpOnly` cookies
+- Не зберігати чутливі дані у client-accessible cookies
+- Не читати cookies в Client Components
+- Використовувати Server Actions для мутацій
+
+**Коротко:**
+
+- Cookies у Next.js — серверна відповідальність
+- Читання: Server Components, Route Handlers, Middleware
+- Запис: Server Actions або API-роути
+- Використання cookies робить сторінку динамічною (SSR)
+
+</details>
+
+<details>
+<summary>43. Як Next.js працює з headers?</summary>
+
+#### Next.js
+
+У **Next.js** робота з HTTP headers є **серверною відповідальністю** і
+інтегрована в **App Router**.  
+Headers доступні у **Server Components**, **Route Handlers**, **Server Actions**
+та **Middleware**, але **не доступні напряму в Client Components**.
+
+1. Читання headers у Server Components
+
+Для читання headers використовується хелпер **`headers()`** з `next/headers`.
+
+```tsx
+import { headers } from 'next/headers';
+
+export default function Page() {
+  const headersList = headers();
+  const userAgent = headersList.get('user-agent');
+
+  return <div>User-Agent: {userAgent}</div>;
+}
+```
+
+- працює тільки на сервері
+- робить сторінку динамічною (SSR)
+
+2. Headers у Route Handlers (API-роутах)
+
+У Route Handlers headers читаються та встановлюються через стандартний Web Fetch
+API.
+
+```TypeScript
+export async function GET(request: Request) {
+  const auth = request.headers.get('authorization');
+
+  return new Response(JSON.stringify({ auth }), {
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Custom-Header': 'example',
+    },
+  });
+}
+```
+
+3. Headers у Server Actions
+
+Server Actions можуть читати headers, але зазвичай не використовуються для їх
+зміни напряму — для цього краще підходять Route Handlers або Middleware.
+
+```TypeScript
+'use server';
+
+import { headers } from 'next/headers';
+
+export async function action() {
+  const locale = headers().get('accept-language');
+  return locale;
+}
+```
+
+4. Headers у Middleware
+
+Middleware виконується до рендерингу і ідеально підходить для роботи з headers:
+
+```TypeScript
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(req: NextRequest) {
+  const res = NextResponse.next();
+
+  res.headers.set('x-app-version', '1.0.0');
+  return res;
+}
+```
+
+Типові кейси:
+
+- auth / access control
+- redirects
+- A/B testing
+- geo-based логіка
+- security headers
+
+5. Вплив headers на рендеринг і кеш
+
+Використання headers:
+
+- вимикає static rendering
+- сторінка стає **SSR**
+- сторінка не кешується за замовчуванням
+
+Це очікувана поведінка, оскільки headers залежать від запиту.
+
+6. Headers і Client Components
+
+**Client Components не мають прямого доступу до headers.**
+
+Допустимі варіанти:
+
+- передати значення з сервера через props
+- отримати дані через API
+
+#### Best practices
+
+- Працювати з headers **тільки на сервері**
+- Використовувати Middleware для pre-request логіки
+- Не читати headers без потреби (впливає на SSR)
+- Для безпеки налаштовувати headers централізовано
+- Не хардкодити логіку на основі `user-agent` без необхідності
+
+**Коротко:**
+
+- Headers у Next.js доступні лише на сервері
+- Читання: Server Components, Route Handlers, Middleware
+- Зміна: Route Handlers, Middleware
+- Використання headers робить сторінку динамічною (SSR)
+
+</details>
+
+<details>
+<summary>45. Коли доцільно підключати бібліотеки керування станом?</summary>
+
+#### Next.js
+
+У **Next.js** більшість задач керування станом вирішуються через:
+
+- **Server Components**
+- **Server Actions**
+- **URL / cookies**
+- **React Context**
+
+Зовнішні state-бібліотеки потрібні **лише в окремих сценаріях**, коли
+стандартних інструментів недостатньо.
+
+#### Коли бібліотеки стану **НЕ потрібні** (типовий випадок)
+
+Не використовуй Redux/Zustand, якщо:
+
+- дані приходять із сервера (SSR / SSG / ISR)
+- стан можна зберігати в:
+  - URL (фільтри, пошук, пагінація)
+  - cookies (auth, preferences)
+- мутації виконуються через **Server Actions**
+- стан локальний для одного компонента
+
+У більшості Next.js-проєктів цього достатньо.
+
+#### Коли бібліотеки стану **доцільні**
+
+1. Великий клієнтський застосунок (SPA-like)
+
+Якщо багато:
+
+- client-only логіки
+- складної взаємодії між компонентами
+- стану, що часто змінюється на клієнті
+
+Приклади:
+
+- конструктори (drag & drop)
+- дашборди з real-time UI
+- складні форми / multi-step flows
+
+2. Глобальний UI-стан, що часто змінюється
+
+Наприклад:
+
+- глобальні модалки
+- toast-система
+- sidebar / layout state
+- client-side кеш
+
+У таких випадках **Zustand або Jotai** — хороший вибір.
+
+3. Real-time дані на клієнті
+
+- WebSocket
+- live-оновлення
+- streaming UI
+- collaborative editing
+
+Server Components тут не підходять.
+
+4. Складна взаємозалежна логіка стану
+
+Коли:
+
+- багато взаємоповʼязаних частин стану
+- складні transitions
+- потрібна централізована логіка
+
+Тоді може знадобитись **Redux Toolkit**.
+
+#### Коли бібліотеки — **погана ідея**
+
+Для:
+
+- auth
+- основних даних сторінки
+- даних із БД
+- SEO-критичного контенту
+- server-side стану
+
+Це повинно жити на сервері.
+
+#### Важливий нюанс для Next.js 16+
+
+State-бібліотеки працюють **лише у Client Components**:
+
+```tsx
+'use client';
+```
+
+Тому:
+
+- вони збільшують JS-бандл
+- погіршують initial load
+- не повинні використовуватись без необхідності
+
+**Коротко:**
+
+- У більшості Next.js проєктів state-бібліотеки не потрібні
+- Вони виправдані для складного client-side UI або real-time логіки
+- Працюють тільки у Client Components
+- Підключати їх варто лише при реальній необхідності
+
+</details>
+
+<details>
+<summary>46. Яка роль tsconfig.json у Next.js-проєкті?</summary>
+
+#### Next.js
+
+Файл **`tsconfig.json`** визначає, як **TypeScript компілює та перевіряє код** у
+Next.js-проєкті.  
+У Next.js 16+ цей файл також впливає на:
+
+- типізацію
+- alias-імпорти
+- перевірку помилок під час build
+- роботу редактора (VS Code)
+
+Next.js автоматично створює базову конфігурацію при першому запуску TypeScript.
+
+1. Типова конфігурація Next.js
+
+```json
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "strict": true,
+    "noEmit": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}
+```
+
+2. Основні ролі `tsconfig.json`
+
+**Type checking**
+
+- перевірка типів під час розробки та build
+- `strict: true` — рекомендується для production
+
+Alias-імпорти
+
+```json
+{
+  "baseUrl": ".",
+  "paths": {
+    "@/*": ["./*"]
+  }
+}
+```
+
+Використання:
+
+```TypeScript
+import Button from '@/components/Button';
+```
+
+Переваги:
+
+- короткі імпорти
+- менше `../../../`
+- зручність у великих проєктах
+
+**Контроль компіляції**
+
+- `noEmit: true` — Next.js сам керує збіркою
+- TypeScript використовується тільки для перевірки типів
+
+3. Взаємодія з Next.js
+
+Next.js:
+
+- автоматично читає `tsconfig.json`
+- оптимізує збірку через SWC
+- показує TypeScript-помилки під час next build
+- створює `next-env.d.ts`
+
+Якщо є TypeScript-помилки — build може впасти.
+
+4. Важливі опції для Next.js 16+
+
+| Опція                       | Навіщо                       |
+| --------------------------- | ---------------------------- |
+| `strict`                    | безпечний код                |
+| `moduleResolution: bundler` | коректна робота з App Router |
+| `jsx: preserve`             | JSX обробляє Next.js         |
+| `incremental`               | швидший type-check           |
+| `paths`                     | alias-імпорти                |
+
+5. Що не потрібно робити
+
+- змінювати `module` на `commonjs`
+- вимикати `strict` у production
+- використовувати `emit` — Next.js керує збіркою сам
+
+**Коротко:**
+
+- `tsconfig.json` керує TypeScript-перевіркою та налаштуваннями компіляції
+- Використовується для alias-імпортів і strict-режиму
+- Next.js читає його під час build
+- Це ключовий файл для стабільності та масштабованості проєкту
+
+</details>
+
+<details>
+<summary>47. Як визначати типи для сторінок у Next.js?</summary>
+
+#### Next.js
+
+У **Next.js (App Router)** сторінки є **Server Components за замовчуванням**,
+тому їх типізація базується на:
+
+- типах props сторінки
+- типах `params` для динамічних маршрутів
+- типах `searchParams` для query-параметрів
+
+Next.js не використовує спеціальний тип на кшталт `NextPage` (він був у Pages
+Router).
+
+1. Базова типізація сторінки
+
+Сторінка — це звичайна функція з типізованими props.
+
+```tsx
+export default function Page() {
+  return <div>Hello</div>;
+}
+```
+
+Спеціальні типи не потрібні.
+
+2. Типізація динамічних параметрів (`params`)
+
+Для маршруту:
+
+```bash
+app/posts/[id]/page.tsx
+```
+
+```tsx
+type PageProps = {
+  params: {
+    id: string;
+  };
+};
+
+export default function Page({ params }: PageProps) {
+  return <div>Post: {params.id}</div>;
+}
+```
+
+#### Кілька параметрів
+
+```bash
+app/users/[userId]/posts/[postId]/page.tsx
+```
+
+```tsx
+type PageProps = {
+  params: {
+    userId: string;
+    postId: string;
+  };
+};
+```
+
+3. Типізація `searchParams`
+
+```tsx
+type PageProps = {
+  searchParams: {
+    page?: string;
+    sort?: string;
+  };
+};
+
+export default function Page({ searchParams }: PageProps) {
+  const page = Number(searchParams.page ?? 1);
+  return <div>Page: {page}</div>;
+}
+```
+
+4. Комбінована типізація
+
+```tsx
+type PageProps = {
+  params: { id: string };
+  searchParams: { tab?: string };
+};
+
+export default function Page({ params, searchParams }: PageProps) {
+  return (
+    <div>
+      {params.id} - {searchParams.tab}
+    </div>
+  );
+}
+```
+
+5. Типізація для async Server Pages
+
+Сторінки можуть бути async:
+
+```tsx
+type PageProps = {
+  params: { id: string };
+};
+
+export default async function Page({ params }: PageProps) {
+  const data = await getPost(params.id);
+  return <div>{data.title}</div>;
+}
+```
+
+6. Типізація `generateStaticParams`
+
+```TypeScript
+export async function generateStaticParams(): Promise<
+  { id: string }[]
+> {
+  return [{ id: '1' }, { id: '2' }];
+}
+```
+
+7. Чого не використовують у Next.js 16+
+
+- `NextPage`
+- `GetServerSideProps`
+- `GetStaticProps`
+- Pages Router типи
+
+#### Best practices
+
+- Описувати окремий тип `PageProps`
+- Завжди типізувати `params` для динамічних маршрутів
+- Використовувати optional-поля для `searchParams`
+- Не використовувати legacy типи з Pages Router
+
+**Коротко:**
+
+- Сторінки в App Router — звичайні функції
+- Типізуються через `params` і `searchParams`
+- NextPage та інші Pages Router типи не використовуються
+- Типізація виконується вручну через PageProps
+
+</details>
+
+<details>
+<summary>48. Як мігрувати Next.js-проєкт на TypeScript?</summary>
+
+#### Next.js
+
+У **Next.js 16+** перехід на TypeScript максимально спрощений — фреймворк
+автоматично налаштовує більшість конфігурації.  
+Міграція може виконуватись **поступово**, без повного переписування проєкту.
+
+1. Встановлення TypeScript
+
+Встановіть необхідні пакети:
+
+```bash
+npm install --save-dev typescript @types/react @types/node
+```
+
+2. Створення першого TypeScript-файлу
+
+Створіть або перейменуйте будь-який файл:
+
+```css
+page.js → page.tsx
+```
+
+Після запуску:
+
+```bash
+npm run dev
+```
+
+Next.js автоматично:
+
+- створить `tsconfig.json`
+- створить `next-env.d.ts`
+- налаштує рекомендовані опції
+
+3. Поступова міграція (рекомендовано)
+
+Next.js підтримує змішаний код:
+
+```json
+"allowJs": true
+```
+
+Стратегія:
+
+1. Почати з нових файлів (`.ts / .tsx`)
+2. Поступово перейменовувати старі
+3. Типізувати ключові частини:
+
+- компоненти
+- API
+- утиліти
+- data fetching
+
+4. Типізація компонентів
+
+```tsx
+type Props = {
+  title: string;
+};
+
+export function Header({ title }: Props) {
+  return <h1>{title}</h1>;
+}
+```
+
+5. Типізація сторінок (App Router)
+
+```tsx
+type PageProps = {
+  params: { id: string };
+};
+
+export default function Page({ params }: PageProps) {
+  return <div>{params.id}</div>;
+}
+```
+
+6. Перевірка типів
+
+Next.js перевіряє типи під час build:
+
+```bash
+npm run build
+```
+
+Якщо є помилки TypeScript — збірка завершиться з помилкою.
+
+7. Важливі налаштування `tsconfig.json`
+
+Рекомендовано:
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "moduleResolution": "bundler",
+    "incremental": true
+  }
+}
+```
+
+8. Типова стратегія міграції для великих проєктів
+
+1. Увімкнути TypeScript
+1. Залишити `allowJs: true`
+1. Мігрувати:
+
+- `lib/`
+- `components/`
+- `features/`
+
+4. В кінці вимкнути allowJs
+
+#### Що не потрібно робити
+
+- переписувати весь проєкт одразу
+- вимикати `strict`
+- використовувати `any` без потреби
+- створювати власний tsconfig з нуля (Next.js генерує оптимальний)
+
+**Коротко:**
+
+- Встановити TypeScript і створити `.ts` або `.tsx`
+- Next.js автоматично створює конфігурацію
+- Міграцію можна виконувати поступово
+- Рекомендовано використовувати `strict` режим
+
+</details>
+
+<details>
+<summary>49. Як TypeScript використовується в API-роутах Next.js?</summary>
+
+#### Next.js
+
+У **Next.js** API-роути реалізуються через **Route Handlers**
+(`app/api/**/route.ts`) і працюють на базі **Web Fetch API**.  
+TypeScript використовується для типізації:
+
+- тіла запиту
+- відповіді
+- параметрів маршруту (`params`)
+- query-параметрів
+
+1. Базовий API-роут з TypeScript
+
+```TypeScript
+// app/api/posts/route.ts
+export async function GET(): Promise<Response> {
+  return Response.json({ posts: [] });
+}
+```
+
+Next.js автоматично визначає типи, але явне повернення `Promise<Response>` —
+good practice.
+
+2. Типізація тіла запиту (POST)
+
+```TypeScript
+type CreatePostBody = {
+  title: string;
+  content: string;
+};
+
+export async function POST(request: Request) {
+  const body: CreatePostBody = await request.json();
+
+  return Response.json({
+    success: true,
+    title: body.title,
+  });
+}
+```
+
+Важливо: request.json() повертає any, тому тип потрібно вказувати вручну.
+
+3. Типізація параметрів маршруту (params)
+
+Для маршруту:
+
+```bash
+app/api/posts/[id]/route.ts
+```
+
+```TypeScript
+type RouteParams = {
+  params: {
+    id: string;
+  };
+};
+
+export async function GET(
+  request: Request,
+  { params }: RouteParams
+) {
+  return Response.json({ id: params.id });
+}
+```
+
+4. Типізація query parameters
+
+```TypeScript
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const page = Number(searchParams.get('page') ?? 1);
+
+  return Response.json({ page });
+}
+```
+
+Для складних кейсів можна створити тип:
+
+```TypeScript
+type Query = {
+  page?: string;
+  limit?: string;
+};
+```
+
+5. Типізація відповіді
+
+```TypeScript
+type PostResponse = {
+  id: string;
+  title: string;
+};
+
+export async function GET(): Promise<Response> {
+  const data: PostResponse = {
+    id: '1',
+    title: 'Hello',
+  };
+
+  return Response.json(data);
+}
+```
+
+6. Використання утиліт для типів
+
+Рекомендовано виносити типи:
+
+```txt
+types/
+ └─ api.ts
+```
+
+```TypeScript
+export type CreateUserBody = {
+  email: string;
+  password: string;
+};
+```
+
+7. Що не використовується в Next.js 16+
+
+- `NextApiRequest`
+- `NextApiResponse`
+- `pages/api`
+- Express-подібні типи
+
+App Router використовує стандартні:
+
+- `Request`
+- `Response`
+
+#### Best practices
+
+- Завжди типізувати `request.json()`
+- Виносити типи у `types/`
+- Типізувати `params` для динамічних маршрутів
+- Не використовувати legacy типи з Pages Router
+
+**Коротко:**
+
+- API-роути в App Router використовують стандартні `Request` і `Response`
+- TypeScript типізує body, params і відповіді
+- Legacy типи Pages Router не використовуються
+- Типи краще виносити в окремі файли
+
+</details>
+
+<details>
+<summary>50. Як забезпечити type safety у Next.js-проєкті?</summary>
+
+#### Next.js
+
+У **Next.js** type safety досягається через поєднання:
+
+- суворої конфігурації TypeScript
+- типізації серверної та клієнтської логіки
+- єдиних типів для API і даних
+- перевірки типів під час build
+
+Мета — **type-safe потік даних від БД → сервер → UI**.
+
+1. Увімкнути strict-режим
+
+У `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true
+  }
+}
+```
+
+Це основа type safety.
+
+2. Типізувати сторінки та маршрути
+
+```tsx
+type PageProps = {
+  params: { id: string };
+  searchParams: { page?: string };
+};
+
+export default function Page({ params }: PageProps) {
+  return <div>{params.id}</div>;
+}
+```
+
+3. Типізувати data fetching
+
+```tsx
+type Post = {
+  id: string;
+  title: string;
+};
+
+async function getPost(id: string): Promise<Post> {
+  const res = await fetch(`/api/posts/${id}`);
+  return res.json();
+}
+```
+
+Ніколи не залишати `any`.
+
+4. Спільні типи для клієнта і сервера
+
+```txt
+types/
+ └─ post.ts
+```
+
+```TypeScript
+export type Post = {
+  id: string;
+  title: string;
+};
+```
+
+Використовувати:
+
+- у Route Handlers
+- у Server Components
+- у Client Components
+
+5. Типізація API-роутів
+
+```TypeScript
+type CreatePostBody = {
+  title: string;
+};
+
+export async function POST(request: Request) {
+  const body: CreatePostBody = await request.json();
+  return Response.json(body);
+}
+```
+
+6. Runtime-валидація (важливо)
+
+TypeScript перевіряє на етапі компіляції, але не в runtime. Для повної безпеки
+використовують схеми (наприклад, Zod).
+
+```tsx
+import { z } from 'zod';
+
+const schema = z.object({
+  title: z.string(),
+});
+
+const body = schema.parse(await request.json());
+```
+
+7. Типізація Server Actions
+
+```TypeScript
+'use server';
+
+type FormDataType = {
+  email: string;
+};
+
+export async function submit(data: FormDataType) {
+  // type-safe
+}
+```
+
+8. Уникати `any`
+
+Якщо потрібно тимчасово:
+
+```TypeScript
+unknown // краще ніж any
+```
+
+9. Типізувати env-змінні
+
+Створити:
+
+```TypeScript
+env.d.ts
+declare namespace NodeJS {
+  interface ProcessEnv {
+    DATABASE_URL: string;
+  }
+}
+```
+
+10. Перевірка під час build
+
+Next.js запускає type-check під час:
+
+```bush
+npm run build
+```
+
+Якщо є помилки — build падає.
+
+#### Архітектурні принципи type safety
+
+- Server Components як джерело істини
+- Спільні типи (`types/`)
+- Runtime-валидація для зовнішніх даних
+- Мінімум Client Components
+- Відсутність `any`
+
+**Коротко:**
+
+- Увімкнути `strict` режим
+- Використовувати спільні типи для server/client
+- Типізувати API, сторінки та data fetching
+- Додати runtime-валидацію для зовнішніх даних
+- Не використовувати `any`
+
+</details>
