@@ -5059,3 +5059,135 @@ npm run build
 - Не використовувати `any`
 
 </details>
+
+<details>
+<summary>51. У чому концептуальна різниця між Pages Router та App Router?</summary>
+
+#### Next.js
+
+**Pages Router** і **App Router** — це два різні підходи до побудови застосунку
+в Next.js.  
+Головна різниця — в **архітектурній моделі рендерингу, роботи з даними та
+розділенні server/client логіки**.
+
+У **Next.js 16+** основним і рекомендованим є **App Router**.
+
+1. Архітектурна модель
+
+| Pages Router                      | App Router                  |
+| --------------------------------- | --------------------------- |
+| React SPA + SSR/SSG через функції | Server-first архітектура    |
+| Більшість логіки на клієнті       | Більшість логіки на сервері |
+| Сторінки в `pages/`               | Маршрути в `app/`           |
+
+2. Робота з даними
+
+**Pages Router**
+
+Використовує спеціальні lifecycle-функції:
+
+- `getServerSideProps`
+- `getStaticProps`
+- `getInitialProps`
+
+```TypeScript
+export async function getServerSideProps() {}
+```
+
+**App Router**
+
+Data fetching виконується напряму в компоненті:
+
+```tsx
+export default async function Page() {
+  const data = await fetch(url);
+  return <div>{data.title}</div>;
+}
+```
+
+Переваги:
+
+- менше boilerplate
+- вбудоване кешування
+- ISR через `revalidate`
+
+3. Server Components (ключова відмінність)
+
+**Pages Router**
+
+- всі компоненти — Client Components
+
+**App Router**
+
+- Server Compon`ents за замовчуванням
+- `'use client'` лише за потреби
+
+Це дає:
+
+- менший JS-бандл
+- кращу продуктивність
+- безпечний доступ до БД/секретів
+
+4. Layout і вкладеність
+
+**Pages Router**
+
+- один `_app.tsx`
+- один `_document.tsx`
+
+**App Router**
+
+Підтримує вкладені layout-и:
+
+```txt
+app/
+ ├─ layout.tsx
+ ├─ dashboard/
+ │   ├─ layout.tsx
+ │   └─ page.tsx
+```
+
+Також доступні:
+
+- `loading.tsx`
+- `error.tsx`
+- `not-found.tsx`
+
+5. Нові можливості App Router
+
+- React Server Components
+- Streaming
+- Server Actions
+- Route Handlers (`app/api`)
+- Кешування на рівні `fetch`
+- Route Groups
+
+Ці можливості відсутні або обмежені у Pages Router.
+
+6. Порівняння
+
+| Критерій          | Pages Router      | App Router         |
+| ----------------- | ----------------- | ------------------ |
+| Server Components | ❌                | ✅                 |
+| Data fetching     | lifecycle-функції | fetch у компоненті |
+| Layout nesting    | ❌                | ✅                 |
+| Streaming         | ❌                | ✅                 |
+| Server Actions    | ❌                | ✅                 |
+| Статус            | Legacy            | Standard           |
+
+1. Коли використовується Pages Router
+
+- legacy-проєкти
+- поступова міграція
+- старі бібліотеки
+
+Нові проєкти — тільки App Router.
+
+**Коротко:**
+
+- Pages Router — legacy клієнт-орієнтований підхід
+- App Router — server-first архітектура
+- Data fetching через `fetch` замість lifecycle-функцій
+- App Router — стандарт у Next.js 16+
+
+</details>
