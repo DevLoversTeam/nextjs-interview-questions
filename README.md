@@ -5478,3 +5478,116 @@ Next.js 16+ використовує server-first підхід:
 - Client Components використовуються лише для інтерактивності
 
 </details>
+
+<details>
+<summary>54. У чому різниця між Server Components та Client Components?</summary>
+
+#### Next.js
+
+У **Next.js (App Router)** компоненти поділяються на два типи:
+
+- **Server Components** — виконуються на сервері (за замовчуванням)
+- **Client Components** — виконуються у браузері (позначаються `'use client'`)
+
+Головна різниця — **де виконується код і чи потрапляє він у клієнтський
+JavaScript-бандл**.
+
+1. Server Components
+
+**Виконання**
+
+- працюють **тільки на сервері**
+- їх JavaScript **не відправляється в браузер**
+
+```tsx
+export default async function Page() {
+  const data = await fetch(url).then(r => r.json());
+  return <div>{data.title}</div>;
+}
+```
+
+**Можливості**
+
+- доступ до БД
+- доступ до `process.env`
+- робота з cookies / headers
+- data fetching
+
+**Обмеження**
+
+Не можна:
+
+- `useState`, `useEffect`
+- обробники подій (`onClick`)
+- браузерні API (`window`, `localStorage`)
+
+2. Client Components
+
+Позначаються директивою:
+
+```tsx
+'use client';
+```
+
+**Виконання**
+
+- працюють у браузері
+- додаються до JS-бандлу
+- проходять hydration
+
+```tsx
+'use client';
+
+import { useState } from 'react';
+
+export function Counter() {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount(count + 1)}>{count}</button>;
+}
+```
+
+**Використовуються для**
+
+- інтерактивності
+- форм
+- модалок
+- анімацій
+- browser API
+
+3. Основні відмінності
+
+| Критерій                | Server Component | Client Component |
+| ----------------------- | ---------------- | ---------------- |
+| Де виконується          | Сервер           | Браузер          |
+| Потрапляє в JS-бандл    | ❌               | ✅               |
+| useState / useEffect    | ❌               | ✅               |
+| Event handlers          | ❌               | ✅               |
+| Доступ до БД / секретів | ✅               | ❌               |
+| SEO / performance       | Вищий            | Нижчий           |
+
+4. Взаємодія між ними
+
+- Server Component може рендерити Client Component
+- Client Component не може імпортувати Server Component
+
+```tsx
+export default function Page() {
+  return <Counter />; // Client Component
+}
+```
+
+5. Архітектурний принцип Next.js 16+
+
+**Server-first**
+
+- Максимум Server Components
+- Client Components — лише там, де потрібна інтерактивність
+
+**Коротко:**
+
+- Server Components — сервер, без JS у браузері
+- Client Components — браузер, для інтерактивності
+- App Router працює за принципом server-first
+- `'use client'` слід використовувати мінімально
+
+</details>
