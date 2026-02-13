@@ -4243,6 +4243,105 @@ export function middleware(req: NextRequest) {
 </details>
 
 <details>
+<summary>44. Як керувати глобальним станом без зовнішніх бібліотек?</summary>
+
+#### Next.js
+
+У **Next.js 16+ (App Router)** глобальний стан часто можна організувати **без
+Redux/Zustand** через вбудовані інструменти платформи:
+
+- Server Components
+- URL state (`searchParams`)
+- cookies
+- React Context
+- Server Actions
+
+1. Server-first підхід
+
+Більшість "глобальних" даних у Next.js мають серверну природу:
+
+- сесія користувача
+- роль/permissions
+- дані профілю
+- фільтри, що впливають на SSR
+
+Такі дані краще читати в Server Components і передавати вниз через props.
+
+2. URL як джерело істини
+
+Для стану інтерфейсу (пошук, сортування, фільтри, пагінація) використовуй URL:
+
+- стан зберігається у `searchParams`
+- легко шарити посилання
+- працює з back/forward навігацією
+
+Це часто замінює "глобальний store" для сторінок списків.
+
+3. Cookies для персистентних налаштувань
+
+Для теми, локалі, user preferences:
+
+- читаємо на сервері через `cookies()`
+- змінюємо через Server Actions або Route Handlers
+
+Так стан узгоджений між SSR і клієнтом.
+
+4. React Context для client-only глобального стану
+
+Context достатній для невеликого глобального стану в клієнті:
+
+- active tab
+- UI-прапорці (sidebar open/close)
+- тимчасові interaction-стани
+
+```tsx
+'use client';
+
+import { createContext, useContext, useState } from 'react';
+
+const UiContext = createContext<{
+  isSidebarOpen: boolean;
+  setSidebarOpen: (v: boolean) => void;
+} | null>(null);
+
+export function UiProvider({ children }: { children: React.ReactNode }) {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  return <UiContext.Provider value={{ isSidebarOpen, setSidebarOpen }}>{children}</UiContext.Provider>;
+}
+
+export function useUi() {
+  const ctx = useContext(UiContext);
+  if (!ctx) throw new Error('useUi must be used inside UiProvider');
+  return ctx;
+}
+```
+
+5. Server Actions для мутацій
+
+Замість глобального client-store для синхронізації:
+
+- мутація на сервері через Server Action
+- після зміни викликаємо `revalidatePath` / `revalidateTag`
+
+Це дає консистентний стан без дублювання логіки на клієнті.
+
+#### Коли цього вже недостатньо
+
+Подумай про зовнішню state-бібліотеку, якщо:
+
+- великий обсяг client-only стану
+- складні залежності між багатьма client-компонентами
+- high-frequency updates у браузері (наприклад, редактори/конструктори)
+
+**Коротко:**
+
+- У Next.js глобальний стан часто закривається без бібліотек: server-first + URL + cookies + Context.
+- Server Actions замінюють частину client-side синхронізації стану.
+- Зовнішній store підключають лише коли реально домінує складний client-only state.
+
+</details>
+
+<details>
 <summary>45. Коли доцільно підключати бібліотеки керування станом?</summary>
 
 #### Next.js
