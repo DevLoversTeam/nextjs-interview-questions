@@ -5348,3 +5348,133 @@ URL:
 - App Router забезпечує server-first і сегментну архітектуру
 
 </details>
+
+<details>
+<summary>53. Що таке Server Components і навіщо вони потрібні?</summary>
+
+#### Next.js
+
+**Server Components** — це компоненти, які **виконуються на сервері**, а їх
+результат (HTML + мінімальні дані) передається в браузер.
+
+У **Next.js 16+ (App Router)** всі компоненти є **Server Components за
+замовчуванням**.  
+Client Components потрібно явно позначати директивою:
+
+```tsx
+'use client';
+```
+
+1. Як працюють Server Components
+
+Процес рендерингу:
+
+- Компонент виконується на сервері
+- Виконується data fetching (БД, API, файли)
+- Формується HTML + спеціальний payload
+- У браузер відправляється без JavaScript компонента
+
+```tsx
+export default async function Page() {
+  const posts = await fetch('https://api.example.com/posts').then(r =>
+    r.json()
+  );
+
+  return <div>{posts.length}</div>;
+}
+```
+
+2. Головні переваги
+
+**Менший JS-бандл**
+
+Server Components:
+
+- не потрапляють у клієнтський bundle
+- зменшують initial load
+
+**Прямий доступ до серверних ресурсів**
+
+Можна безпечно використовувати:
+
+- базу даних
+- секрети (`process.env`)
+- файлову систему
+
+```TypeScript
+const data = await db.post.findMany();
+```
+
+**Краща продуктивність**
+
+- менше hydration
+- швидший First Load
+- менше клієнтської логіки
+
+3. Обмеження Server Components
+
+Server Components не можуть:
+
+- використовувати React hooks (`useState`, `useEffect`)
+- працювати з браузерними API
+- обробляти клієнтські події (`onClick`)
+
+Для цього потрібен Client Component:
+
+```TypeScript
+'use client';
+
+export function Button() {
+   const [count, setCount] = useState(0);
+   return <button onClick={() => setCount(count + 1)}>{count}</button>;
+   }
+```
+
+4. Комбінування Server і
+
+Client Server Component може рендерити Client Component:
+
+```tsx
+export default function Page() {
+  return <Counter />; // Client Component
+}
+```
+
+Це дозволяє:
+
+- мінімізувати клієнтський JS
+- ізолювати інтерактивність
+
+5. Типові use cases
+
+Server Components:
+
+- сторінки
+- layout-и
+- data fetching
+- SEO-контент
+- dashboard дані
+
+Client Components:
+
+- форми
+- кнопки
+- модалки
+- анімації
+
+6. Вплив на архітектуру
+
+Next.js 16+ використовує server-first підхід:
+
+- більшість логіки на сервері
+- клієнт — тільки для інтерактивності
+- менше глобального client-state
+
+**Коротко:**
+
+- Server Components виконуються на сервері і не потрапляють у JS-бандл
+- Вони зменшують розмір клієнтського коду і покращують продуктивність
+- За замовчуванням всі компоненти в App Router — серверні
+- Client Components використовуються лише для інтерактивності
+
+</details>
