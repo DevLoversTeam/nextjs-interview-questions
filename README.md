@@ -5191,3 +5191,160 @@ app/
 - App Router — стандарт у Next.js 16+
 
 </details>
+
+<details>
+<summary>52. Як працює файловий роутинг в App Router?</summary>
+
+#### Next.js
+
+У **Next.js** файловий роутинг базується на структурі папки **`app/`**.  
+Кожна папка відповідає **URL-сегменту**, а спеціальні файли визначають, що саме
+рендериться для цього маршруту.
+
+1. Базовий принцип
+
+Структура папок = URL.
+
+```txt
+app/
+ ├─ page.tsx
+ ├─ about/
+ │   └─ page.tsx
+ └─ blog/
+     └─ page.tsx
+```
+
+Відповідні маршрути:
+
+```bash
+/           → app/page.tsx
+/about      → app/about/page.tsx
+/blog       → app/blog/page.tsx
+```
+
+Файл `page.tsx` є точкою входу для маршруту.
+
+2. Layout-и
+
+Файл `layout.tsx` створює спільний інтерфейс для сегмента та його вкладених
+маршрутів.
+
+```txt
+app/
+ ├─ layout.tsx
+ ├─ dashboard/
+ │   ├─ layout.tsx
+ │   └─ page.tsx
+```
+
+- Root layout — для всього застосунку
+- Вкладені layout-и — для конкретних секцій
+- Layout-и зберігаються між переходами
+
+3. Динамічні маршрути
+
+```txt
+app/posts/[id]/page.tsx
+```
+
+URL:
+
+```bash
+/posts/123
+```
+
+Доступ до параметра:
+
+```tsx
+export default function Page({ params }: { params: { id: string } }) {
+  return <div>{params.id}</div>;
+}
+```
+
+4. Route Groups (логічне групування)
+
+Папки в дужках не впливають на URL:
+
+```txt
+app/
+ ├─ (auth)/
+ │   └─ login/page.tsx
+```
+
+URL:
+
+```bash
+/login
+```
+
+Використовується для:
+
+- розділення layout-ів
+- організації коду
+
+5. Спеціальні файли App Router
+
+| Файл            | Призначення         |
+| --------------- | ------------------- |
+| `page.tsx`      | сторінка            |
+| `layout.tsx`    | layout              |
+| `loading.tsx`   | стан завантаження   |
+| `error.tsx`     | обробка помилок     |
+| `not-found.tsx` | 404 для сегмента    |
+| `route.ts`      | API (Route Handler) |
+
+6. Catch-all маршрути
+
+```txt
+app/docs/[...slug]/page.tsx
+```
+
+URL:
+
+```css
+/docs/a/b/c
+```
+
+```tsx
+params.slug; // ['a', 'b', 'c']
+```
+
+Optional catch-all:
+
+```txt
+[[...slug]]
+```
+
+7. Вкладеність маршрутів
+
+App Router підтримує глибоку вкладеність:
+
+```txt
+app/
+ └─ dashboard/
+     └─ settings/
+         └─ profile/
+             └─ page.tsx
+```
+
+URL:
+
+```bash
+/dashboard/settings/profile
+```
+
+#### Важливі особливості
+
+- Server Components за замовчуванням
+- Layout-и зберігають стан між переходами
+- Streaming і loading працюють на рівні сегментів
+- Роутинг автоматичний — без ручних конфігурацій
+
+**Коротко:**
+
+- Маршрути формуються структурою папки `app/`
+- `page.tsx` — сторінка, `layout.tsx` — спільний UI
+- Підтримуються динамічні, catch-all і route groups
+- App Router забезпечує server-first і сегментну архітектуру
+
+</details>
